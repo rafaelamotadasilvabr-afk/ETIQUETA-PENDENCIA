@@ -4,180 +4,48 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Etiquetas de Pendência - Azul Cargo</title>
-
 <script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.6/dist/JsBarcode.all.min.js"></script>
 
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
-body{
-  font-family:Arial,Helvetica,sans-serif;
-  background:#f4f6f8;
-  color:#002b55;
-}
-.topbar{
-  height:18px;
-  background:#003f7f;
-}
-.container{
-  display:grid;
-  grid-template-columns:360px 1fr;
-  gap:30px;
-  padding:32px 54px;
-}
-.panel{
-  background:white;
-  border:2px solid #00427f;
-  border-radius:10px;
-  padding:26px;
-}
-h2{
-  font-size:22px;
-  margin-bottom:28px;
-  color:#003f7f;
-}
-label{
-  display:block;
-  font-weight:bold;
-  margin:18px 0 8px;
-  font-size:15px;
-}
-input,select,textarea{
-  width:100%;
-  border:2px solid #cfd6df;
-  border-radius:5px;
-  padding:12px;
-  font-size:15px;
-}
-textarea{
-  min-height:80px;
-  resize:vertical;
-}
-button{
-  border:none;
-  border-radius:5px;
-  padding:13px;
-  font-weight:bold;
-  cursor:pointer;
-  color:white;
-  font-size:15px;
-}
-.btn-blue{background:#00427f}
-.btn-green{background:#28a745}
-.btn-purple{background:#a100ff}
-.btn-red{background:#ff2d35}
-.btn-lightblue{background:#267dff}
-.btn-orange{background:#ff8a00}
-.actions{
-  display:flex;
-  flex-direction:column;
-  gap:12px;
-  margin-bottom:28px;
-}
-.cards{
-  display:flex;
-  flex-wrap:wrap;
-  gap:22px;
-  align-items:flex-start;
-}
-.card{
-  width:395px;
-  background:white;
-  border:1.8px solid #00427f;
-  border-radius:10px;
-  padding:28px 24px 24px;
-  position:relative;
-  box-shadow:0 2px 5px rgba(0,0,0,.08);
-}
-.logo{
-  text-align:center;
-  font-size:12px;
-  font-weight:bold;
-  margin-bottom:18px;
-}
-.logo span{
-  color:#0070c9;
-}
-.close{
-  position:absolute;
-  right:12px;
-  top:10px;
-  background:#ff2d35;
-  width:24px;
-  height:24px;
-  border-radius:50%;
-  line-height:24px;
-  text-align:center;
-  color:white;
-  font-weight:bold;
-  cursor:pointer;
-}
-.barcode{
-  text-align:center;
-  margin-bottom:24px;
-}
-.card label{
-  margin-top:16px;
-  font-size:15px;
-}
-.awb{
-  font-size:74px;
-  font-weight:bold;
-  color:#00427f;
-  text-align:center;
-  letter-spacing:2px;
-  margin:28px 0;
-}
-.card-buttons{
-  display:grid;
-  grid-template-columns:1fr 1fr;
-  gap:10px;
-}
-.footer-actions{
-  display:flex;
-  gap:12px;
-  margin-top:20px;
-}
-.empty{
-  color:#607080;
-  font-size:16px;
-  padding:30px;
-}
+body{font-family:Arial,Helvetica,sans-serif;background:#f4f6f8;color:#003b73}
+.topbar{height:18px;background:#003f7f}
+.container{display:grid;grid-template-columns:380px 1fr;gap:28px;padding:32px 56px}
+.panel{background:#fff;border:2px solid #00427f;border-radius:10px;padding:24px}
+h2{font-size:22px;margin-bottom:22px;color:#003f7f}
+label{display:block;font-weight:bold;margin:16px 0 7px;font-size:14px}
+input,select,textarea{width:100%;border:2px solid #ccd4dd;border-radius:5px;padding:11px;font-size:15px}
+textarea{min-height:92px;resize:vertical}
+button{border:none;border-radius:5px;padding:12px;font-weight:bold;cursor:pointer;color:#fff;font-size:14px}
+.btn-blue{background:#00427f}.btn-green{background:#28a745}.btn-purple{background:#a100ff}
+.btn-red{background:#ff2d35}.btn-lightblue{background:#267dff}.btn-orange{background:#ff8a00}
+.btn-gray{background:#607080}
+.actions{display:flex;flex-direction:column;gap:12px;margin-bottom:22px}
+.footer-actions{display:flex;gap:10px;margin-top:16px;flex-wrap:wrap}
+.cards{display:flex;flex-wrap:wrap;gap:22px;align-items:flex-start}
+.card{width:395px;background:#fff;border:1.8px solid #00427f;border-radius:10px;padding:28px 24px 24px;position:relative;box-shadow:0 2px 5px rgba(0,0,0,.08)}
+.logo{text-align:center;font-size:12px;font-weight:bold;margin-bottom:18px}.logo span{color:#0070c9}
+.close{position:absolute;right:12px;top:10px;background:#ff2d35;width:24px;height:24px;border-radius:50%;line-height:24px;text-align:center;color:#fff;font-weight:bold;cursor:pointer}
+.barcode{text-align:center;margin-bottom:22px}
+.awb{font-size:72px;font-weight:bold;color:#00427f;text-align:center;letter-spacing:2px;margin:26px 0}
+.card-buttons{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.empty{color:#607080;font-size:16px;padding:30px}
+.help{font-size:12px;color:#607080;line-height:1.4;margin-top:6px}
+.count{font-weight:bold;margin-bottom:14px;color:#003f7f}
+
 @media print{
-  body{background:white}
-  .topbar,.panel,.footer-actions{display:none!important}
-  .container{
-    display:block;
-    padding:0;
-  }
-  .cards{
-    display:flex;
-    flex-wrap:wrap;
-    gap:0;
-  }
-  .card{
-    width:10cm;
-    height:15cm;
-    border:1.5px solid #000;
-    border-radius:0;
-    box-shadow:none;
-    page-break-inside:avoid;
-    margin:0;
-  }
-  .close,.card-buttons{
-    display:none!important;
-  }
+  body{background:#fff}
+  .topbar,.panel,.footer-actions,.count{display:none!important}
+  .container{display:block;padding:0}
+  .cards{display:flex;flex-wrap:wrap;gap:0}
+  .card{width:10cm;height:15cm;border:1.5px solid #000;border-radius:0;box-shadow:none;page-break-inside:avoid;margin:0}
+  .close,.card-buttons{display:none!important}
 }
+
 @media(max-width:900px){
-  .container{
-    grid-template-columns:1fr;
-    padding:20px;
-  }
-  .card{
-    width:100%;
-  }
-  .awb{
-    font-size:54px;
-  }
+  .container{grid-template-columns:1fr;padding:20px}
+  .card{width:100%}
+  .awb{font-size:54px}
 }
 </style>
 </head>
@@ -191,42 +59,40 @@ button{
     <h2>Entrada de Dados</h2>
 
     <div class="actions">
-      <button class="btn-blue" onclick="alert('Use o campo AWB para colar ou digitar o código.')">📁 Galeria</button>
-      <button class="btn-green" onclick="alert('Leitura por câmera pode ser adicionada depois.')">📷 Câmera</button>
+      <button class="btn-blue" onclick="alert('Use o campo AWB ou cole o lote abaixo.')">📁 Galeria</button>
+      <button class="btn-green" onclick="alert('Câmera pode ser adicionada depois.')">📷 Câmera</button>
       <button class="btn-purple" onclick="focarAWB()">▣ Ler Código de Barras</button>
     </div>
 
     <label>Código AWB</label>
     <input id="awb" placeholder="Cole ou digite o AWB" maxlength="15">
 
-    <button class="btn-lightblue" style="width:100%;margin-top:10px" onclick="adicionarEtiqueta()">Adicionar AWB</button>
+    <label>Status da Carga</label>
+    <select id="status"></select>
 
     <label>SLA - Data de Vencimento</label>
-    <input id="sla" placeholder="Ex: 15/04/2026">
-
-    <label>Status da Carga</label>
-    <select id="status">
-      <option value="">SELECIONE O MOTIVO</option>
-      <option>PENDÊNCIA DE ENDEREÇO</option>
-      <option>DESTINATÁRIO AUSENTE</option>
-      <option>RECUSA NO RECEBIMENTO</option>
-      <option>AVARIA</option>
-      <option>EXTRAVIO EM ANÁLISE</option>
-      <option>AGUARDANDO RETIRADA</option>
-      <option>REENTREGA PROGRAMADA</option>
-      <option>TRATATIVA COMERCIAL</option>
-    </select>
+    <input id="sla" placeholder="Ex: 24/06/2026">
 
     <label>Informações adicionais</label>
     <textarea id="info" placeholder="Digite aqui"></textarea>
 
+    <button class="btn-lightblue" style="width:100%;margin-top:10px" onclick="adicionarEtiqueta()">Adicionar AWB</button>
+
+    <label>Importar lote</label>
+    <textarea id="lote" placeholder="Ex:
+25285562 - endereço n localizado -24/06/2026
+13239214 - devolução - 21/06/2026"></textarea>
+    <div class="help">Formato aceito: AWB - motivo - SLA</div>
+
     <div class="footer-actions">
+      <button class="btn-blue" onclick="importarLote()">📥 Importar Lote</button>
       <button class="btn-orange" onclick="imprimirTodas()">🖨️ Imprimir Todas</button>
       <button class="btn-red" onclick="limparTudo()">🗑️ Limpar Lote</button>
     </div>
   </div>
 
   <div>
+    <div class="count" id="contador">0 etiquetas geradas</div>
     <div id="lista" class="cards">
       <div class="empty">Nenhuma etiqueta gerada ainda.</div>
     </div>
@@ -235,14 +101,73 @@ button{
 </div>
 
 <script>
+const motivos = [
+  "AUSENTE + DE 3 VEZES",
+  "ENDERECO NAO LOCALIZADO",
+  "CLIENTE DESCONHECIDO",
+  "CLIENTE MUDOU-SE",
+  "CEP ERRADO",
+  "ETIQUETAS DIVERGENTES",
+  "RECUSADO",
+  "BAIXA ERRONEA",
+  "CTE CANCELADO",
+  "AVARIA",
+  "FALTA VOLUME",
+  "TROCA DE OFFLOAD",
+  "DEVOLUCAO",
+  "REENTREGA",
+  "DUPLICIDADE"
+];
+
 let etiquetas = JSON.parse(localStorage.getItem('etiquetasPendencia') || '[]');
 
 function salvar(){
   localStorage.setItem('etiquetasPendencia', JSON.stringify(etiquetas));
 }
 
+function carregarMotivos(){
+  const selects = [document.getElementById('status')];
+  selects.forEach(sel => {
+    sel.innerHTML = '<option value="">SELECIONE O MOTIVO</option>';
+    motivos.forEach(m => {
+      sel.innerHTML += `<option value="${m}">${m}</option>`;
+    });
+  });
+}
+
 function focarAWB(){
   document.getElementById('awb').focus();
+}
+
+function normalizarTexto(txt){
+  return String(txt || '')
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g,'')
+    .toUpperCase()
+    .replace(/\s+/g,' ')
+    .trim();
+}
+
+function normalizarMotivo(motivo){
+  const m = normalizarTexto(motivo);
+
+  if(m.includes('AUSENTE')) return 'AUSENTE + DE 3 VEZES';
+  if(m.includes('ENDERECO') && (m.includes('NAO') || m.includes('N ')) && m.includes('LOCALIZADO')) return 'ENDERECO NAO LOCALIZADO';
+  if(m.includes('DESCONHECIDO')) return 'CLIENTE DESCONHECIDO';
+  if(m.includes('MUDOU')) return 'CLIENTE MUDOU-SE';
+  if(m.includes('CEP')) return 'CEP ERRADO';
+  if(m.includes('DIVERGENTE')) return 'ETIQUETAS DIVERGENTES';
+  if(m.includes('RECUS')) return 'RECUSADO';
+  if(m.includes('BAIXA')) return 'BAIXA ERRONEA';
+  if(m.includes('CTE')) return 'CTE CANCELADO';
+  if(m.includes('AVARIA')) return 'AVARIA';
+  if(m.includes('FALTA')) return 'FALTA VOLUME';
+  if(m.includes('OFFLOAD')) return 'TROCA DE OFFLOAD';
+  if(m.includes('DEVOL')) return 'DEVOLUCAO';
+  if(m.includes('REENTREGA')) return 'REENTREGA';
+  if(m.includes('DUPLIC')) return 'DUPLICIDADE';
+
+  return motivo ? normalizarTexto(motivo) : '';
 }
 
 function adicionarEtiqueta(){
@@ -257,7 +182,7 @@ function adicionarEtiqueta(){
   }
 
   etiquetas.push({
-    id: Date.now(),
+    id: Date.now() + Math.random(),
     awb,
     sla,
     status,
@@ -267,6 +192,41 @@ function adicionarEtiqueta(){
   document.getElementById('awb').value = '';
   salvar();
   renderizar();
+}
+
+function importarLote(){
+  const texto = document.getElementById('lote').value.trim();
+  if(!texto){
+    alert('Cole as informações do lote.');
+    return;
+  }
+
+  const linhas = texto.split(/\n+/);
+  let adicionadas = 0;
+
+  linhas.forEach(linha => {
+    const partes = linha.split('-').map(p => p.trim()).filter(Boolean);
+
+    if(partes.length >= 3){
+      const awb = partes[0];
+      const sla = partes[partes.length - 1];
+      const motivo = partes.slice(1, partes.length - 1).join(' - ');
+
+      etiquetas.push({
+        id: Date.now() + Math.random(),
+        awb,
+        status: normalizarMotivo(motivo),
+        sla,
+        info: ''
+      });
+
+      adicionadas++;
+    }
+  });
+
+  salvar();
+  renderizar();
+  alert(adicionadas + ' etiquetas importadas.');
 }
 
 function excluirEtiqueta(id){
@@ -282,7 +242,7 @@ function atualizarEtiqueta(id){
   const info = card.querySelector('.info-card').value;
 
   etiquetas = etiquetas.map(e => {
-    if(e.id === id){
+    if(String(e.id) === String(id)){
       e.status = status;
       e.sla = sla;
       e.info = info;
@@ -296,6 +256,9 @@ function atualizarEtiqueta(id){
 
 function renderizar(){
   const lista = document.getElementById('lista');
+  const contador = document.getElementById('contador');
+
+  contador.textContent = etiquetas.length + ' etiquetas geradas';
   lista.innerHTML = '';
 
   if(etiquetas.length === 0){
@@ -309,14 +272,12 @@ function renderizar(){
     card.setAttribute('data-id', e.id);
 
     card.innerHTML = `
-      <div class="close" onclick="excluirEtiqueta(${e.id})">×</div>
+      <div class="close" onclick="excluirEtiqueta('${e.id}')">×</div>
 
-      <div class="logo">
-        <span>Azul</span> Express
-      </div>
+      <div class="logo"><span>Azul</span> Express</div>
 
       <div class="barcode">
-        <svg id="barcode-${e.id}"></svg>
+        <svg id="barcode-${String(e.id).replace('.','')}"></svg>
       </div>
 
       <label>Status da Carga</label>
@@ -333,14 +294,14 @@ function renderizar(){
       <div class="awb">${escapeHtml(e.awb)}</div>
 
       <div class="card-buttons">
-        <button class="btn-lightblue" onclick="atualizarEtiqueta(${e.id})">🔄 Atualizar</button>
-        <button class="btn-red" onclick="excluirEtiqueta(${e.id})">🗑️ Deletar</button>
+        <button class="btn-lightblue" onclick="atualizarEtiqueta('${e.id}')">🔄 Atualizar</button>
+        <button class="btn-red" onclick="excluirEtiqueta('${e.id}')">🗑️ Deletar</button>
       </div>
     `;
 
     lista.appendChild(card);
 
-    JsBarcode(`#barcode-${e.id}`, e.awb, {
+    JsBarcode(`#barcode-${String(e.id).replace('.','')}`, e.awb, {
       format: "CODE128",
       width: 2,
       height: 55,
@@ -351,22 +312,11 @@ function renderizar(){
 }
 
 function opcoesStatus(valor){
-  const ops = [
-    '',
-    'PENDÊNCIA DE ENDEREÇO',
-    'DESTINATÁRIO AUSENTE',
-    'RECUSA NO RECEBIMENTO',
-    'AVARIA',
-    'EXTRAVIO EM ANÁLISE',
-    'AGUARDANDO RETIRADA',
-    'REENTREGA PROGRAMADA',
-    'TRATATIVA COMERCIAL'
-  ];
-
-  return ops.map(o => {
-    const txt = o || 'SELECIONE O MOTIVO';
-    return `<option value="${o}" ${o === valor ? 'selected' : ''}>${txt}</option>`;
-  }).join('');
+  let html = '<option value="">SELECIONE O MOTIVO</option>';
+  motivos.forEach(m => {
+    html += `<option value="${m}" ${m === valor ? 'selected' : ''}>${m}</option>`;
+  });
+  return html;
 }
 
 function imprimirTodas(){
@@ -390,15 +340,14 @@ function escapeHtml(texto){
     .replaceAll('<','&lt;')
     .replaceAll('>','&gt;')
     .replaceAll('"','&quot;')
-    .replaceAll("'",'&#039;');
+    .replaceAll("'","&#039;");
 }
 
 document.getElementById('awb').addEventListener('keydown', function(e){
-  if(e.key === 'Enter'){
-    adicionarEtiqueta();
-  }
+  if(e.key === 'Enter') adicionarEtiqueta();
 });
 
+carregarMotivos();
 renderizar();
 </script>
 
