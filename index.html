@@ -56,8 +56,6 @@ body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--g100);color:va
 .fmt-sel{display:flex;gap:.4rem;margin-bottom:.75rem}
 .fmt-btn{padding:.32rem .75rem;border-radius:5px;border:1.5px solid var(--g200);background:#fff;font-size:.76rem;cursor:pointer;transition:.15s;font-weight:600}
 .fmt-btn.active{border-color:var(--azul);background:var(--azul-lt);color:var(--azul)}
-
-/* ETIQUETA */
 #etiqueta{width:400px;border:2.5px solid #000;font-family:'Courier New',Courier,monospace;background:#fff}
 #etiqueta.termica{width:320px}
 #etiqueta.mini{width:270px}
@@ -95,7 +93,6 @@ body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--g100);color:va
 .etq-footer{padding:.28rem .75rem;display:flex;justify-content:space-between;align-items:center}
 .etq-footer span{font-size:.58rem;color:var(--g600);font-family:'Segoe UI',sans-serif}
 .etq-obs-tag{background:var(--warn);color:#fff;font-size:.56rem;font-weight:900;padding:.08rem .38rem;border-radius:3px;font-family:'Segoe UI',sans-serif}
-
 .tbl-wrap{overflow-x:auto}
 table{width:100%;border-collapse:collapse;font-size:.81rem}
 thead th{background:var(--g50);padding:.6rem .8rem;text-align:left;font-size:.66rem;text-transform:uppercase;letter-spacing:.04em;color:var(--g600);border-bottom:2px solid var(--g200);white-space:nowrap}
@@ -205,7 +202,6 @@ tbody td{padding:.62rem .8rem;color:var(--g700)}
 <div class="view" id="view-nova">
   <div style="display:flex;gap:1.4rem;align-items:flex-start" id="nova-cols">
     <div style="flex:1;min-width:0">
-
       <div class="card">
         <div class="card-title">📤 Remetente</div>
         <div class="fg">
@@ -378,7 +374,6 @@ tbody td{padding:.62rem .8rem;color:var(--g700)}
           <button class="fmt-btn" onclick="setFmt('termica',this)">Térmica</button>
           <button class="fmt-btn" onclick="setFmt('mini',this)">Mini</button>
         </div>
-
         <div id="etiqueta">
           <div class="etq-head">
             <div>
@@ -431,7 +426,6 @@ tbody td{padding:.62rem .8rem;color:var(--g700)}
             <span id="etq-dt">—</span>
           </div>
         </div>
-
         <div style="display:flex;flex-wrap:wrap;gap:.5rem;margin-top:.75rem">
           <button class="btn bp bsm" id="btn-imp" onclick="imprimir()" disabled>🖨️ Imprimir</button>
           <button class="btn bg bsm" id="btn-pdf" onclick="baixarPDF()" disabled>⬇️ PDF</button>
@@ -559,313 +553,308 @@ tbody td{padding:.62rem .8rem;color:var(--g700)}
 </div><!-- /wrap -->
 
 <script>
-// ─── ESTADO ───────────────────────────────────────────
-var hist    = JSON.parse(localStorage.getItem('etq_hist') || '[]');
-var cfg     = JSON.parse(localStorage.getItem('etq_cfg')  || '{}');
-var rasc    = JSON.parse(localStorage.getItem('etq_rasc') || '{}');
+// ═══════════════════════════════════════
+// ESTADO
+// ═══════════════════════════════════════
+var hist     = JSON.parse(localStorage.getItem('etq_hist') || '[]');
+var cfg      = JSON.parse(localStorage.getItem('etq_cfg')  || '{}');
+var rasc     = JSON.parse(localStorage.getItem('etq_rasc') || '{}');
 var loteData = [];
 var delTarget = null;
 var codigoAtual = null;
+var srvMap = { 'EXPRESS':'AZE', 'ECONOMICO':'AZC', 'CARGO+':'AZP' };
 
-// ─── NAVEGAÇÃO ────────────────────────────────────────
-function go(id) {
-  document.querySelectorAll('.view').forEach(function(v){ v.classList.remove('active'); });
-  document.querySelectorAll('.nav-links button').forEach(function(b){ b.classList.remove('active'); });
-  document.getElementById('view-' + id).classList.add('active');
-  document.getElementById('nb-' + id).classList.add('active');
-  if (id === 'dash') renderDash();
-  if (id === 'hist') renderHist();
-  if (id === 'cfg')  carregarCfg();
-  if (id === 'nova' && Object.keys(rasc).length) restRasc();
+// ═══════════════════════════════════════
+// HELPERS
+// ═══════════════════════════════════════
+function g(id){ return document.getElementById(id); }
+function val(id){ var el=g(id); return el&&el.value?el.value.trim():''; }
+function rawN(el){ return el.value.replace(/\D/g,'').length; }
+
+function toast(msg,tipo){
+  var el=document.createElement('div');
+  el.className='toast '+(tipo||'');
+  el.textContent=msg;
+  g('toasts').appendChild(el);
+  setTimeout(function(){el.remove();},3500);
 }
 
-// ─── TOAST ────────────────────────────────────────────
-function toast(msg, tipo) {
-  var el = document.createElement('div');
-  el.className = 'toast ' + (tipo || '');
-  el.textContent = msg;
-  document.getElementById('toasts').appendChild(el);
-  setTimeout(function(){ el.remove(); }, 3500);
+// ═══════════════════════════════════════
+// NAVEGAÇÃO
+// ═══════════════════════════════════════
+function go(id){
+  document.querySelectorAll('.view').forEach(function(v){v.classList.remove('active');});
+  document.querySelectorAll('.nav-links button').forEach(function(b){b.classList.remove('active');});
+  g('view-'+id).classList.add('active');
+  g('nb-'+id).classList.add('active');
+  if(id==='dash') renderDash();
+  if(id==='hist') renderHist();
+  if(id==='cfg')  carregarCfg();
+  if(id==='nova'&&Object.keys(rasc).length) restRasc();
 }
 
-// ─── MÁSCARAS ─────────────────────────────────────────
-function rawN(el) { return el.value.replace(/\D/g,'').length; }
-
-function mCep(el) {
-  var v = el.value.replace(/\D/g,'').slice(0,8);
-  el.value = v.length > 5 ? v.slice(0,5) + '-' + v.slice(5) : v;
+// ═══════════════════════════════════════
+// MÁSCARAS
+// ═══════════════════════════════════════
+function mCep(el){
+  var v=el.value.replace(/\D/g,'').slice(0,8);
+  el.value=v.length>5?v.slice(0,5)+'-'+v.slice(5):v;
 }
-
-function mDoc(el) {
-  var v = el.value.replace(/\D/g,'');
-  if (v.length <= 11) {
-    v = v.replace(/(\d{3})(\d)/,'$1.$2')
-         .replace(/(\d{3})(\d)/,'$1.$2')
-         .replace(/(\d{3})(\d{1,2})$/,'$1-$2');
+function mDoc(el){
+  var v=el.value.replace(/\D/g,'');
+  if(v.length<=11){
+    v=v.replace(/(\d{3})(\d)/,'$1.$2')
+       .replace(/(\d{3})(\d)/,'$1.$2')
+       .replace(/(\d{3})(\d{1,2})$/,'$1-$2');
   } else {
-    v = v.slice(0,14)
-         .replace(/(\d{2})(\d)/,'$1.$2')
-         .replace(/(\d{3})(\d)/,'$1.$2')
-         .replace(/(\d{3})(\d)/,'$1/$2')
-         .replace(/(\d{4})(\d{1,2})$/,'$1-$2');
+    v=v.slice(0,14)
+       .replace(/(\d{2})(\d)/,'$1.$2')
+       .replace(/(\d{3})(\d)/,'$1.$2')
+       .replace(/(\d{3})(\d)/,'$1/$2')
+       .replace(/(\d{4})(\d{1,2})$/,'$1-$2');
   }
-  el.value = v;
+  el.value=v;
+}
+function mTel(el){
+  var v=el.value.replace(/\D/g,'').slice(0,11);
+  if(v.length>10) el.value=v.replace(/(\d{2})(\d{5})(\d{4})/,'($1) $2-$3');
+  else if(v.length>6) el.value=v.replace(/(\d{2})(\d{4})(\d*)/,'($1) $2-$3');
+  else if(v.length>2) el.value=v.replace(/(\d{2})(\d*)/,'($1) $2');
+  else el.value=v;
 }
 
-function mTel(el) {
-  var v = el.value.replace(/\D/g,'').slice(0,11);
-  if (v.length > 10) el.value = v.replace(/(\d{2})(\d{5})(\d{4})/,'($1) $2-$3');
-  else if (v.length > 6) el.value = v.replace(/(\d{2})(\d{4})(\d*)/,'($1) $2-$3');
-  else if (v.length > 2) el.value = v.replace(/(\d{2})(\d*)/,'($1) $2');
-  else el.value = v;
-}
-
-// ─── BUSCA CEP ────────────────────────────────────────
-function buscaCep(p) {
-  var cepEl = document.getElementById(p + '-cep');
-  var msgEl = document.getElementById(p + '-cep-m');
-  var cep   = cepEl.value.replace(/\D/g,'');
-  if (cep.length !== 8) { toast('CEP deve ter 8 dígitos','warn'); return; }
-  msgEl.textContent = '⏳ Buscando...';
-  msgEl.className = 'fmsg';
-  fetch('https://viacep.com.br/ws/' + cep + '/json/')
-    .then(function(r){ return r.json(); })
+// ═══════════════════════════════════════
+// BUSCA CEP
+// ═══════════════════════════════════════
+function buscaCep(p){
+  var cepEl=g(p+'-cep');
+  var msgEl=g(p+'-cep-m');
+  var cep=cepEl.value.replace(/\D/g,'');
+  if(cep.length!==8){toast('CEP deve ter 8 dígitos','warn');return;}
+  if(msgEl){msgEl.textContent='⏳ Buscando...';msgEl.className='fmsg';}
+  fetch('https://viacep.com.br/ws/'+cep+'/json/')
+    .then(function(r){return r.json();})
     .then(function(d){
-      if (d.erro) {
-        msgEl.textContent = '✗ CEP não encontrado';
-        msgEl.className = 'fmsg err';
+      if(d.erro){
+        if(msgEl){msgEl.textContent='✗ CEP não encontrado';msgEl.className='fmsg err';}
         return;
       }
-      document.getElementById(p + '-end').value    = d.logradouro || '';
-      document.getElementById(p + '-bairro').value = d.bairro     || '';
-      document.getElementById(p + '-cidade').value = d.localidade || '';
-      var ufEl = document.getElementById(p + '-uf');
-      for (var i = 0; i < ufEl.options.length; i++) {
-        if (ufEl.options[i].value === d.uf) { ufEl.value = d.uf; break; }
+      g(p+'-end').value    = d.logradouro||'';
+      g(p+'-bairro').value = d.bairro||'';
+      g(p+'-cidade').value = d.localidade||'';
+      var ufEl=g(p+'-uf');
+      for(var i=0;i<ufEl.options.length;i++){
+        if(ufEl.options[i].value===d.uf){ufEl.value=d.uf;break;}
       }
-      msgEl.textContent = '✓ ' + d.localidade + '/' + d.uf;
-      msgEl.className = 'fmsg ok';
+      if(msgEl){msgEl.textContent='✓ '+d.localidade+'/'+d.uf;msgEl.className='fmsg ok';}
       upd();
-      toast('CEP encontrado: ' + d.localidade + '/' + d.uf, 'ok');
+      toast('CEP: '+d.localidade+'/'+d.uf,'ok');
     })
     .catch(function(){
-      msgEl.textContent = '✗ Erro ao buscar';
-      msgEl.className = 'fmsg err';
+      if(msgEl){msgEl.textContent='✗ Erro ao buscar';msgEl.className='fmsg err';}
     });
 }
 
-// ─── PESO CÚBICO ──────────────────────────────────────
-function calcCub() {
-  var h = parseFloat(document.getElementById('p-alt').value)  || 0;
-  var l = parseFloat(document.getElementById('p-larg').value) || 0;
-  var c = parseFloat(document.getElementById('p-comp').value) || 0;
-  var p = parseFloat(document.getElementById('p-peso').value) || 0;
-  var el = document.getElementById('cubico');
-  if (h && l && c) {
-    var cub = (h * l * c) / 6000;
-    var cobrado = Math.max(p, cub);
-    document.getElementById('cubico-txt').textContent =
-      h+'×'+l+'×'+c+' ÷ 6.000 = '+cub.toFixed(3)+' kg cubado. ' +
-      'Peso cobrado: '+cobrado.toFixed(3)+' kg ('+(cobrado===cub?'cúbico':'real')+')';
-    el.style.display = 'block';
+// ═══════════════════════════════════════
+// PESO CÚBICO
+// ═══════════════════════════════════════
+function calcCub(){
+  var h=parseFloat(g('p-alt').value)||0;
+  var l=parseFloat(g('p-larg').value)||0;
+  var c=parseFloat(g('p-comp').value)||0;
+  var p=parseFloat(g('p-peso').value)||0;
+  var el=g('cubico');
+  if(h&&l&&c){
+    var cub=(h*l*c)/6000;
+    var cobrado=Math.max(p,cub);
+    g('cubico-txt').textContent=
+      h+'×'+l+'×'+c+' ÷ 6.000 = '+cub.toFixed(3)+' kg. '+
+      'Cobrado: '+cobrado.toFixed(3)+' kg ('+(cobrado===cub?'cúbico':'real')+')';
+    el.style.display='block';
   } else {
-    el.style.display = 'none';
+    el.style.display='none';
   }
 }
 
-// ─── GERAR CÓDIGO DE RASTREIO ─────────────────────────
-function gerarCod() {
-  var pref = ((cfg.prefixo || 'AZ') + 'AZ').toUpperCase().slice(0,2);
-  var ts   = Date.now().toString(36).toUpperCase();
-  var rnd  = Math.random().toString(36).slice(2,6).toUpperCase();
-  return pref + ts + rnd;
+// ═══════════════════════════════════════
+// GERAR CÓDIGO
+// ═══════════════════════════════════════
+function gerarCod(){
+  var pref=((cfg.prefixo||'AZ')+'AZ').toUpperCase().slice(0,2);
+  var ts=Date.now().toString(36).toUpperCase();
+  var rnd=Math.random().toString(36).slice(2,6).toUpperCase();
+  return pref+ts+rnd;
 }
 
-// ─── MAPA SERVIÇO → CÓDIGO ────────────────────────────
-var srvMap = { 'EXPRESS':'AZE', 'ECONOMICO':'AZC', 'CARGO+':'AZP' };
+// ═══════════════════════════════════════
+// UPDATE PREVIEW (tempo real)
+// ═══════════════════════════════════════
+function upd(){
+  var rNome  = val('r-nome');
+  var rEnd   = [val('r-end'),val('r-num'),val('r-comp')].filter(Boolean).join(', ');
+  var rLocal = [val('r-bairro'),val('r-cidade'),val('r-uf')].filter(Boolean).join(' – ');
+  var rCep   = val('r-cep');
 
-// ─── UPDATE PREVIEW ───────────────────────────────────
-function g(id){ return document.getElementById(id); }
-function val(id){ return (g(id) && g(id).value) ? g(id).value.trim() : ''; }
-
-function upd() {
-  // Remetente
-  var rNome   = val('r-nome');
-  var rEnd    = [val('r-end'), val('r-num'), val('r-comp')].filter(Boolean).join(', ');
-  var rLocal  = [val('r-bairro'), val('r-cidade'), val('r-uf')].filter(Boolean).join(' – ');
-  var rCep    = val('r-cep');
-
-  // Destinatário
   var dNome   = val('d-nome');
-  var dEnd    = [val('d-end'), val('d-num'), val('d-comp')].filter(Boolean).join(', ');
+  var dEnd    = [val('d-end'),val('d-num'),val('d-comp')].filter(Boolean).join(', ');
   var dBairro = val('d-bairro');
   var dCidade = val('d-cidade');
   var dUf     = val('d-uf');
   var dCep    = val('d-cep');
 
-  // Pacote
-  var peso    = val('p-peso');
-  var alt     = val('p-alt');
-  var larg    = val('p-larg');
-  var comp    = val('p-comp');
-  var valor   = val('p-valor');
-  var cont    = val('p-conteudo');
-  var obs     = val('p-obs');
-  var srv     = val('p-servico') || 'EXPRESS';
-  var prazo   = val('p-prazo');
+  var peso  = val('p-peso');
+  var alt   = val('p-alt');
+  var larg  = val('p-larg');
+  var comp  = val('p-comp');
+  var valor = val('p-valor');
+  var cont  = val('p-conteudo');
+  var obs   = val('p-obs');
+  var srv   = val('p-servico')||'EXPRESS';
+  var prazo = val('p-prazo');
 
-  // Peso cobrado
-  var pesoCob = peso;
-  if (alt && larg && comp) {
-    var cub = (parseFloat(alt) * parseFloat(larg) * parseFloat(comp)) / 6000;
-    pesoCob = Math.max(parseFloat(peso) || 0, cub).toFixed(3);
+  g('etq-d-nome').textContent   = dNome||'—';
+  g('etq-d-end').textContent    = dEnd||'—';
+  g('etq-d-cep').textContent    = dCep?'CEP: '+dCep:'CEP: —';
+  g('etq-d-cidade').textContent = [dCidade,dUf].filter(Boolean).join(' – ')||'—';
+  g('etq-uf-box').textContent   = dUf||'—';
+  g('etq-uf-cidade').textContent= dCidade||'—';
+  g('etq-uf-bairro').textContent= dBairro||'—';
+  g('etq-r-nome').textContent   = rNome||'—';
+  g('etq-r-end').textContent    = [rEnd,rLocal,rCep?'CEP: '+rCep:''].filter(Boolean).join(' | ')||'—';
+  g('etq-peso').textContent     = peso?peso+' kg':'—';
+  g('etq-dim').textContent      = (alt&&larg&&comp)?alt+'×'+larg+'×'+comp:'—';
+  g('etq-valor').textContent    = valor?'R$ '+parseFloat(valor).toFixed(2):'—';
+  g('etq-conteudo').textContent = cont||'—';
+  g('etq-obs-val').textContent  = obs||'—';
+  g('etq-srv-badge').textContent= srv;
+  g('etq-cod-srv').textContent  = srvMap[srv]||'AZE';
+  g('etq-prazo-txt').textContent= prazo||'—';
+  g('etq-dt').textContent       = new Date().toLocaleString('pt-BR');
+
+  var obsTag=g('etq-obs-tag');
+  if(obs){obsTag.textContent=obs.toUpperCase();obsTag.style.display='inline';}
+  else{obsTag.style.display='none';}
+
+  if(cfg.empresa){
+    g('etq-marca').textContent   ='✈ '+cfg.empresa.toUpperCase();
+    g('etq-footer-l').textContent= cfg.empresa;
   }
-
-  // Preenche etiqueta
-  g('etq-d-nome').textContent    = dNome   || '—';
-  g('etq-d-end').textContent     = dEnd    || '—';
-  g('etq-d-cep').textContent     = dCep ? 'CEP: ' + dCep : 'CEP: —';
-  g('etq-d-cidade').textContent  = [dCidade, dUf].filter(Boolean).join(' – ') || '—';
-
-  g('etq-uf-box').textContent    = dUf     || '—';
-  g('etq-uf-cidade').textContent = dCidade || '—';
-  g('etq-uf-bairro').textContent = dBairro || '—';
-
-  g('etq-r-nome').textContent    = rNome   || '—';
-  g('etq-r-end').textContent     = [rEnd, rLocal, rCep ? 'CEP: '+rCep : ''].filter(Boolean).join(' | ') || '—';
-
-  g('etq-peso').textContent      = peso    ? peso + ' kg'   : '—';
-  g('etq-dim').textContent       = (alt && larg && comp) ? alt+'×'+larg+'×'+comp : '—';
-  g('etq-valor').textContent     = valor   ? 'R$ ' + parseFloat(valor).toFixed(2) : '—';
-  g('etq-conteudo').textContent  = cont    || '—';
-  g('etq-obs-val').textContent   = obs     || '—';
-
-  g('etq-srv-badge').textContent = srv;
-  g('etq-cod-srv').textContent   = srvMap[srv] || 'AZE';
-  g('etq-prazo-txt').textContent = prazo   || '—';
-
-  // Obs tag
-  var obsTag = g('etq-obs-tag');
-  if (obs) { obsTag.textContent = obs.toUpperCase(); obsTag.style.display = 'inline'; }
-  else      { obsTag.style.display = 'none'; }
-
-  // Data/hora
-  g('etq-dt').textContent = new Date().toLocaleString('pt-BR');
-
-  // Logo / marca empresa
-  if (cfg.empresa) {
-    g('etq-marca').textContent = '✈ ' + cfg.empresa.toUpperCase();
-    g('etq-footer-l').textContent = cfg.empresa;
-  }
-  if (cfg.logoB64) {
-    g('etq-logo').src = cfg.logoB64;
-    g('etq-logo').style.display = 'block';
+  if(cfg.logoB64){
+    g('etq-logo').src=cfg.logoB64;
+    g('etq-logo').style.display='block';
   } else {
-    g('etq-logo').style.display = 'none';
+    g('etq-logo').style.display='none';
   }
 
-  // Código de barras (preview usa código temporário)
-  var tmpCod = codigoAtual || ('AZ' + Date.now().toString(36).toUpperCase().slice(-8));
-  g('etq-cod-txt').textContent = tmpCod;
-  try {
-    JsBarcode('#etq-barcode', tmpCod, {
-      format: 'CODE128',
-      width: 1.6,
-      height: 48,
-      displayValue: false,
-      margin: 2
+  var tmpCod=codigoAtual||('AZ'+Date.now().toString(36).toUpperCase().slice(-8));
+  g('etq-cod-txt').textContent=tmpCod;
+  try{
+    JsBarcode('#etq-barcode',tmpCod,{
+      format:'CODE128',width:1.6,height:48,displayValue:false,margin:2
     });
-  } catch(e) {}
+  }catch(e){}
 }
 
-// ─── VALIDAÇÃO BÁSICA ─────────────────────────────────
-function validar() {
-  var ok = true;
-  var campos = [
-    { id:'r-nome',   msg:'r-nome-m',  txt:'Nome do remetente obrigatório' },
-    { id:'r-cep',    msg:'r-cep-m',   txt:'CEP do remetente obrigatório'  },
-    { id:'r-num',    msg:null,        txt:'Número do remetente obrigatório' },
-    { id:'d-nome',   msg:'d-nome-m',  txt:'Nome do destinatário obrigatório' },
-    { id:'d-cep',    msg:'d-cep-m',   txt:'CEP do destinatário obrigatório' },
-    { id:'d-num',    msg:null,        txt:'Número do destinatário obrigatório' },
-    { id:'p-peso',   msg:'p-peso-m',  txt:'Peso do pacote obrigatório' }
+// ═══════════════════════════════════════
+// VALIDAÇÃO
+// ═══════════════════════════════════════
+function validar(){
+  var ok=true;
+  var campos=[
+    {id:'r-nome', msg:'r-nome-m', txt:'Nome do remetente obrigatório'},
+    {id:'r-cep',  msg:'r-cep-m',  txt:'CEP do remetente obrigatório'},
+    {id:'r-num',  msg:null,       txt:'Número do remetente obrigatório'},
+    {id:'d-nome', msg:'d-nome-m', txt:'Nome do destinatário obrigatório'},
+    {id:'d-cep',  msg:'d-cep-m',  txt:'CEP do destinatário obrigatório'},
+    {id:'d-num',  msg:null,       txt:'Número do destinatário obrigatório'},
+    {id:'p-peso', msg:'p-peso-m', txt:'Peso do pacote obrigatório'}
   ];
   campos.forEach(function(c){
-    var el = g(c.id);
-    if (!el || !el.value.trim()) {
-      ok = false;
-      if (c.msg && g(c.msg)) {
-        g(c.msg).textContent = '✗ ' + c.txt;
-        g(c.msg).className = 'fmsg err';
-      }
+    var el=g(c.id);
+    if(!el||!el.value.trim()){
+      ok=false;
+      if(c.msg&&g(c.msg)){g(c.msg).textContent='✗ '+c.txt;g(c.msg).className='fmsg err';}
     } else {
-      if (c.msg && g(c.msg)) {
-        g(c.msg).textContent = '';
-      }
+      if(c.msg&&g(c.msg)){g(c.msg).textContent='';g(c.msg).className='fmsg';}
     }
   });
   return ok;
 }
 
-// ─── GERAR ETIQUETA ───────────────────────────────────
-function gerar() {
-  if (!validar()) { toast('Preencha os campos obrigatórios (*)', 'warn'); return; }
+// ═══════════════════════════════════════
+// GERAR ETIQUETA
+// ═══════════════════════════════════════
+function gerar(){
+  if(!validar()){toast('Preencha os campos obrigatórios (*)','warn');return;}
+  codigoAtual=gerarCod();
 
-  codigoAtual = gerarCod();
+  var h=parseFloat(val('p-alt'))||0;
+  var l=parseFloat(val('p-larg'))||0;
+  var c=parseFloat(val('p-comp'))||0;
+  var p=parseFloat(val('p-peso'))||0;
+  var cub=(h&&l&&c)?parseFloat(((h*l*c)/6000).toFixed(3)):null;
+  var pesoCob=cub?Math.max(p,cub):p;
 
-  var h = parseFloat(val('p-alt'))  || 0;
-  var l = parseFloat(val('p-larg')) || 0;
-  var c = parseFloat(val('p-comp')) || 0;
-  var p = parseFloat(val('p-peso')) || 0;
-  var cub = (h && l && c) ? parseFloat(((h*l*c)/6000).toFixed(3)) : null;
-  var pesoCob = cub ? Math.max(p, cub) : p;
-
-  var registro = {
-    codigo:     codigoAtual,
-    rNome:      val('r-nome'),
-    rDoc:       val('r-doc'),
-    rCep:       val('r-cep'),
-    rEnd:       val('r-end'),
-    rNum:       val('r-num'),
-    rComp:      val('r-comp'),
-    rBairro:    val('r-bairro'),
-    rCidade:    val('r-cidade'),
-    rUf:        val('r-uf'),
-    dNome:      val('d-nome'),
-    dDoc:       val('d-doc'),
-    dTel:       val('d-tel'),
-    dCep:       val('d-cep'),
-    dEnd:       val('d-end'),
-    dNum:       val('d-num'),
-    dComp:      val('d-comp'),
-    dBairro:    val('d-bairro'),
-    dCidade:    val('d-cidade'),
-    dUf:        val('d-uf'),
-    peso:       p,
-    alt:        h || null,
-    larg:       l || null,
-    comp:       c || null,
-    cubado:     cub,
-    pesoCob:    pesoCob,
-    valor:      parseFloat(val('p-valor')) || null,
-    conteudo:   val('p-conteudo'),
-    obs:        val('p-obs'),
-    servico:    val('p-servico') || 'EXPRESS',
-    prazo:      val('p-prazo'),
-    dt:         new Date().toISOString()
+  var reg={
+    codigo:codigoAtual,
+    rNome:val('r-nome'),rDoc:val('r-doc'),
+    rCep:val('r-cep'),rEnd:val('r-end'),rNum:val('r-num'),
+    rComp:val('r-comp'),rBairro:val('r-bairro'),
+    rCidade:val('r-cidade'),rUf:val('r-uf'),
+    dNome:val('d-nome'),dDoc:val('d-doc'),dTel:val('d-tel'),
+    dCep:val('d-cep'),dEnd:val('d-end'),dNum:val('d-num'),
+    dComp:val('d-comp'),dBairro:val('d-bairro'),
+    dCidade:val('d-cidade'),dUf:val('d-uf'),
+    peso:p,alt:h||null,larg:l||null,comp:c||null,
+    cubado:cub,pesoCob:pesoCob,
+    valor:parseFloat(val('p-valor'))||null,
+    conteudo:val('p-conteudo'),obs:val('p-obs'),
+    servico:val('p-servico')||'EXPRESS',
+    prazo:val('p-prazo'),
+    dt:new Date().toISOString()
   };
 
-  hist.unshift(registro);
-  localStorage.setItem('etq_hist', JSON.stringify(hist));
+  hist.unshift(reg);
+  localStorage.setItem('etq_hist',JSON.stringify(hist));
+  localStorage.removeItem('etq_rasc');
+  rasc={};
 
-  // Atualiza preview com código definitivo
   upd();
-  g('etq-cod-txt').textContent = codigoAtual;
-  try {
-    JsBarcode('#etq-barcode', codigoAtual, {
-      format:'CODE128', width:1.6, height:48, displayValue:false, margin:2
+  g('etq-cod-txt').textContent=codigoAtual;
+  try{
+    JsBarcode('#etq-barcode',codigoAtual,{
+      format:'CODE128',width:1.6,height:48,displayValue:false,margin:2
     });
-  } catch(e){}
+  }catch(e){}
 
-  //
+  g('btn-imp').disabled=false;
+  g('btn-pdf').disabled=false;
+  g('btn-nova2').style.display='inline-flex';
+  toast('✅ Etiqueta gerada! Código: '+codigoAtual,'ok');
+}
+
+// ═══════════════════════════════════════
+// IMPRIMIR
+// ═══════════════════════════════════════
+function imprimir(){
+  window.print();
+}
+
+// ═══════════════════════════════════════
+// BAIXAR PDF (via print dialog)
+// ═══════════════════════════════════════
+function baixarPDF(){
+  toast('Use "Salvar como PDF" no diálogo de impressão','');
+  setTimeout(function(){window.print();},400);
+}
+
+// ═══════════════════════════════════════
+// LIMPAR FORMULÁRIO
+// ═══════════════════════════════════════
+function limpar(){
+  var ids=[
+    'r-nome','r-doc','r-cep','r-num','r-end','r-comp','r-bairro','r-cidade','r-uf',
+    'd-nome','d-doc','d-tel','d-cep','d-num','
+
+
 
