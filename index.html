@@ -8,44 +8,252 @@
 
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
-body{font-family:Arial,Helvetica,sans-serif;background:#f4f6f8;color:#003b73}
-.topbar{height:18px;background:#003f7f}
-.container{display:grid;grid-template-columns:380px 1fr;gap:28px;padding:32px 56px}
-.panel{background:#fff;border:2px solid #00427f;border-radius:10px;padding:24px}
-h2{font-size:22px;margin-bottom:22px;color:#003f7f}
-label{display:block;font-weight:bold;margin:16px 0 7px;font-size:14px}
-input,select,textarea{width:100%;border:2px solid #ccd4dd;border-radius:5px;padding:11px;font-size:15px}
-textarea{min-height:92px;resize:vertical}
-button{border:none;border-radius:5px;padding:12px;font-weight:bold;cursor:pointer;color:#fff;font-size:14px}
-.btn-blue{background:#00427f}.btn-green{background:#28a745}.btn-purple{background:#a100ff}
-.btn-red{background:#ff2d35}.btn-lightblue{background:#267dff}.btn-orange{background:#ff8a00}
-.btn-gray{background:#607080}
-.actions{display:flex;flex-direction:column;gap:12px;margin-bottom:22px}
-.footer-actions{display:flex;gap:10px;margin-top:16px;flex-wrap:wrap}
-.cards{display:flex;flex-wrap:wrap;gap:22px;align-items:flex-start}
-.card{width:395px;background:#fff;border:1.8px solid #00427f;border-radius:10px;padding:28px 24px 24px;position:relative;box-shadow:0 2px 5px rgba(0,0,0,.08)}
-.logo{text-align:center;font-size:12px;font-weight:bold;margin-bottom:18px}.logo span{color:#0070c9}
-.close{position:absolute;right:12px;top:10px;background:#ff2d35;width:24px;height:24px;border-radius:50%;line-height:24px;text-align:center;color:#fff;font-weight:bold;cursor:pointer}
-.barcode{text-align:center;margin-bottom:22px}
-.awb{font-size:72px;font-weight:bold;color:#00427f;text-align:center;letter-spacing:2px;margin:26px 0}
-.card-buttons{display:grid;grid-template-columns:1fr 1fr;gap:10px}
-.empty{color:#607080;font-size:16px;padding:30px}
-.help{font-size:12px;color:#607080;line-height:1.4;margin-top:6px}
-.count{font-weight:bold;margin-bottom:14px;color:#003f7f}
+
+body{
+  font-family:Arial,Helvetica,sans-serif;
+  background:#f4f6f8;
+  color:#003b73;
+}
+
+.topbar{
+  height:18px;
+  background:#003f7f;
+}
+
+.container{
+  display:grid;
+  grid-template-columns:380px 1fr;
+  gap:28px;
+  padding:32px 56px;
+}
+
+.panel{
+  background:#fff;
+  border:2px solid #00427f;
+  border-radius:10px;
+  padding:24px;
+}
+
+h2{
+  font-size:22px;
+  margin-bottom:22px;
+  color:#003f7f;
+}
+
+label{
+  display:block;
+  font-weight:bold;
+  margin:16px 0 7px;
+  font-size:14px;
+}
+
+input,select,textarea{
+  width:100%;
+  border:2px solid #ccd4dd;
+  border-radius:5px;
+  padding:11px;
+  font-size:15px;
+}
+
+textarea{
+  min-height:92px;
+  resize:vertical;
+}
+
+button{
+  border:none;
+  border-radius:5px;
+  padding:12px;
+  font-weight:bold;
+  cursor:pointer;
+  color:#fff;
+  font-size:14px;
+}
+
+.btn-blue{background:#00427f}
+.btn-green{background:#28a745}
+.btn-purple{background:#a100ff}
+.btn-red{background:#ff2d35}
+.btn-lightblue{background:#267dff}
+.btn-orange{background:#ff8a00}
+
+.actions{
+  display:flex;
+  flex-direction:column;
+  gap:12px;
+  margin-bottom:22px;
+}
+
+.footer-actions{
+  display:flex;
+  gap:10px;
+  margin-top:16px;
+  flex-wrap:wrap;
+}
+
+.cards{
+  display:flex;
+  flex-wrap:wrap;
+  gap:22px;
+  align-items:flex-start;
+}
+
+.card{
+  width:395px;
+  background:#fff;
+  border:1.8px solid #00427f;
+  border-radius:10px;
+  padding:28px 24px 24px;
+  position:relative;
+  box-shadow:0 2px 5px rgba(0,0,0,.08);
+}
+
+.logo{
+  text-align:center;
+  font-size:12px;
+  font-weight:bold;
+  margin-bottom:18px;
+}
+
+.logo span{
+  color:#0070c9;
+}
+
+.close{
+  position:absolute;
+  right:12px;
+  top:10px;
+  background:#ff2d35;
+  width:26px;
+  height:26px;
+  border-radius:50%;
+  line-height:26px;
+  text-align:center;
+  color:#fff;
+  font-weight:bold;
+  cursor:pointer;
+  font-size:18px;
+}
+
+.barcode{
+  text-align:center;
+  margin-bottom:22px;
+}
+
+.awb{
+  font-size:78px;
+  font-weight:900;
+  color:#00427f;
+  text-align:center;
+  letter-spacing:2px;
+  margin:20px 0 12px;
+  line-height:.95;
+}
+
+.motivo-grande{
+  font-size:28px;
+  font-weight:900;
+  color:#003f7f;
+  text-align:center;
+  text-transform:uppercase;
+  margin:10px 0 18px;
+  line-height:1.1;
+}
+
+.card-buttons{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:10px;
+}
+
+.empty{
+  color:#607080;
+  font-size:16px;
+  padding:30px;
+}
+
+.help{
+  font-size:12px;
+  color:#607080;
+  line-height:1.4;
+  margin-top:6px;
+}
+
+.count{
+  font-weight:bold;
+  margin-bottom:14px;
+  color:#003f7f;
+}
 
 @media print{
-  body{background:#fff}
-  .topbar,.panel,.footer-actions,.count{display:none!important}
-  .container{display:block;padding:0}
-  .cards{display:flex;flex-wrap:wrap;gap:0}
-  .card{width:10cm;height:15cm;border:1.5px solid #000;border-radius:0;box-shadow:none;page-break-inside:avoid;margin:0}
-  .close,.card-buttons{display:none!important}
+  @page{
+    size:10cm 15cm;
+    margin:0;
+  }
+
+  body{
+    background:#fff;
+    margin:0;
+    padding:0;
+  }
+
+  .topbar,
+  .panel,
+  .footer-actions,
+  .count,
+  .empty{
+    display:none!important;
+  }
+
+  .container{
+    display:block;
+    padding:0;
+    margin:0;
+  }
+
+  .cards{
+    display:block;
+    padding:0;
+    margin:0;
+  }
+
+  .card{
+    width:10cm;
+    height:15cm;
+    border:1.5px solid #000;
+    border-radius:0;
+    box-shadow:none;
+    page-break-after:always;
+    page-break-inside:avoid;
+    break-after:page;
+    break-inside:avoid;
+    margin:0;
+  }
+
+  .card:last-child{
+    page-break-after:auto;
+    break-after:auto;
+  }
+
+  .close,
+  .card-buttons{
+    display:none!important;
+  }
 }
 
 @media(max-width:900px){
-  .container{grid-template-columns:1fr;padding:20px}
-  .card{width:100%}
-  .awb{font-size:54px}
+  .container{
+    grid-template-columns:1fr;
+    padding:20px;
+  }
+
+  .card{
+    width:100%;
+  }
+
+  .awb{
+    font-size:54px;
+  }
 }
 </style>
 </head>
@@ -82,6 +290,7 @@ button{border:none;border-radius:5px;padding:12px;font-weight:bold;cursor:pointe
     <textarea id="lote" placeholder="Ex:
 25285562 - endereço n localizado -24/06/2026
 13239214 - devolução - 21/06/2026"></textarea>
+
     <div class="help">Formato aceito: AWB - motivo - SLA</div>
 
     <div class="footer-actions">
@@ -126,12 +335,11 @@ function salvar(){
 }
 
 function carregarMotivos(){
-  const selects = [document.getElementById('status')];
-  selects.forEach(sel => {
-    sel.innerHTML = '<option value="">SELECIONE O MOTIVO</option>';
-    motivos.forEach(m => {
-      sel.innerHTML += `<option value="${m}">${m}</option>`;
-    });
+  const select = document.getElementById('status');
+  select.innerHTML = '<option value="">SELECIONE O MOTIVO</option>';
+
+  motivos.forEach(m => {
+    select.innerHTML += `<option value="${m}">${m}</option>`;
   });
 }
 
@@ -152,7 +360,7 @@ function normalizarMotivo(motivo){
   const m = normalizarTexto(motivo);
 
   if(m.includes('AUSENTE')) return 'AUSENTE + DE 3 VEZES';
-  if(m.includes('ENDERECO') && (m.includes('NAO') || m.includes('N ')) && m.includes('LOCALIZADO')) return 'ENDERECO NAO LOCALIZADO';
+  if(m.includes('ENDERECO') && m.includes('LOCALIZADO')) return 'ENDERECO NAO LOCALIZADO';
   if(m.includes('DESCONHECIDO')) return 'CLIENTE DESCONHECIDO';
   if(m.includes('MUDOU')) return 'CLIENTE MUDOU-SE';
   if(m.includes('CEP')) return 'CEP ERRADO';
@@ -196,6 +404,7 @@ function adicionarEtiqueta(){
 
 function importarLote(){
   const texto = document.getElementById('lote').value.trim();
+
   if(!texto){
     alert('Cole as informações do lote.');
     return;
@@ -230,7 +439,9 @@ function importarLote(){
 }
 
 function excluirEtiqueta(id){
-  etiquetas = etiquetas.filter(e => e.id !== id);
+  if(!confirm('Deseja apagar esta etiqueta?')) return;
+
+  etiquetas = etiquetas.filter(e => String(e.id) !== String(id));
   salvar();
   renderizar();
 }
@@ -251,6 +462,7 @@ function atualizarEtiqueta(id){
   });
 
   salvar();
+  renderizar();
   alert('Etiqueta atualizada.');
 }
 
@@ -267,6 +479,8 @@ function renderizar(){
   }
 
   etiquetas.forEach(e => {
+    const safeId = String(e.id).replace('.','');
+
     const card = document.createElement('div');
     card.className = 'card';
     card.setAttribute('data-id', e.id);
@@ -277,7 +491,7 @@ function renderizar(){
       <div class="logo"><span>Azul</span> Express</div>
 
       <div class="barcode">
-        <svg id="barcode-${String(e.id).replace('.','')}"></svg>
+        <svg id="barcode-${safeId}"></svg>
       </div>
 
       <label>Status da Carga</label>
@@ -292,6 +506,7 @@ function renderizar(){
       <textarea class="info-card" placeholder="Digite aqui">${escapeHtml(e.info || '')}</textarea>
 
       <div class="awb">${escapeHtml(e.awb)}</div>
+      <div class="motivo-grande">${escapeHtml(e.status || 'SEM MOTIVO')}</div>
 
       <div class="card-buttons">
         <button class="btn-lightblue" onclick="atualizarEtiqueta('${e.id}')">🔄 Atualizar</button>
@@ -301,21 +516,23 @@ function renderizar(){
 
     lista.appendChild(card);
 
-    JsBarcode(`#barcode-${String(e.id).replace('.','')}`, e.awb, {
-      format: "CODE128",
-      width: 2,
-      height: 55,
-      displayValue: false,
-      margin: 0
+    JsBarcode(`#barcode-${safeId}`, e.awb, {
+      format:"CODE128",
+      width:2,
+      height:55,
+      displayValue:false,
+      margin:0
     });
   });
 }
 
 function opcoesStatus(valor){
   let html = '<option value="">SELECIONE O MOTIVO</option>';
+
   motivos.forEach(m => {
     html += `<option value="${m}" ${m === valor ? 'selected' : ''}>${m}</option>`;
   });
+
   return html;
 }
 
@@ -324,11 +541,13 @@ function imprimirTodas(){
     alert('Nenhuma etiqueta para imprimir.');
     return;
   }
+
   window.print();
 }
 
 function limparTudo(){
   if(!confirm('Deseja apagar todas as etiquetas geradas?')) return;
+
   etiquetas = [];
   salvar();
   renderizar();
