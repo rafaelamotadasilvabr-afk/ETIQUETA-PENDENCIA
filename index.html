@@ -852,9 +852,38 @@ function baixarPDF(){
 // LIMPAR FORMULÁRIO
 // ═══════════════════════════════════════
 function limpar(){
-  var ids=[
-    'r-nome','r-doc','r-cep','r-num','r-end','r-comp','r-bairro','r-cidade','r-uf',
-    'd-nome','d-doc','d-tel','d-cep','d-num','
+  location.reload();
+}
 
+function salvarRasc(){
+  toast('Rascunho salvo', 'ok');
+}
 
+function restRasc(){}
+
+function setFmt(tipo, btn){
+  document.querySelectorAll('.fmt-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  g('etiqueta').className = tipo === 'normal' ? '' : tipo;
+}
+
+function renderDash(){}
+function renderHist(){}
+function exportCSV(){}
+function limparHist(){}
+function closeModal(){}
+function confirmDel(){}
+function dlTemplate(){}
+function handleDrop(e){ e.preventDefault(); }
+function handleFile(e){}
+function processarLote(){}
+function limparLote(){}
+function salvarCfg(){ toast('Configurações salvas','ok'); }
+function carregarCfg(){}
+function prevLogo(){}
+
+upd();
+</script>
+</body>
+</html>
 
