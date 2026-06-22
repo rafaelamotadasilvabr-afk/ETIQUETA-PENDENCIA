@@ -1,0 +1,1095 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Gerador de Etiquetas Azul Cargo</title>
+<script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.6/dist/JsBarcode.all.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
+
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --azul:#1351B4;--azul-dark:#0c3d8a;--azul-light:#dce9f9;
+  --accent:#F5A623;--danger:#e53935;--success:#2e7d32;
+  --gray-50:#f8f9fa;--gray-100:#f1f3f5;--gray-200:#e9ecef;
+  --gray-300:#dee2e6;--gray-400:#adb5bd;--gray-600:#6c757d;
+  --gray-700:#495057;--gray-800:#343a40;
+  --radius:8px;--shadow:0 2px 12px rgba(0,0,0,.1)
+}
+body{font-family:'Segoe UI',system-ui,sans-serif;background:#f0f2f5;color:var(--gray-800);min-height:100vh}
+
+/* NAVBAR */
+.navbar{background:var(--azul);color:#fff;height:60px;padding:0 1.5rem;
+  display:flex;align-items:center;justify-content:space-between;
+  box-shadow:0 2px 8px rgba(0,0,0,.25);position:sticky;top:0;z-index:200}
+.brand{display:flex;align-items:center;gap:.6rem;font-weight:800;font-size:1.1rem;letter-spacing:.02em}
+.brand-sub{font-size:.65rem;font-weight:400;opacity:.75;display:block;letter-spacing:.06em}
+.nav-links{display:flex;gap:.15rem;list-style:none}
+.nav-links a{color:rgba(255,255,255,.82);text-decoration:none;padding:.45rem .9rem;
+  border-radius:6px;font-size:.82rem;font-weight:500;cursor:pointer;transition:.15s}
+.nav-links a:hover,.nav-links a.active{background:rgba(255,255,255,.2);color:#fff}
+
+/* LAYOUT */
+.page{display:none}.page.active{display:block}
+.wrap{max-width:1360px;margin:0 auto;padding:1.5rem}
+
+/* CARDS */
+.card{background:#fff;border-radius:var(--radius);box-shadow:var(--shadow);padding:1.5rem;margin-bottom:1.25rem}
+.card-title{font-size:.95rem;font-weight:700;color:var(--azul);border-bottom:2px solid var(--azul-light);
+  padding-bottom:.65rem;margin-bottom:1.25rem;display:flex;align-items:center;gap:.45rem}
+
+/* STATS */
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:1rem;margin-bottom:1.25rem}
+.stat{background:#fff;border-radius:var(--radius);box-shadow:var(--shadow);padding:1.1rem 1.25rem;
+  display:flex;align-items:center;gap:.9rem}
+.stat-icon{width:44px;height:44px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:1.3rem}
+.ic-blue{background:var(--azul-light)}.ic-orange{background:#fff3cd}.ic-green{background:#d4edda}.ic-purple{background:#e8d5f5}
+.stat-label{font-size:.72rem;color:var(--gray-400);margin-bottom:.15rem}
+.stat-val{font-size:1.5rem;font-weight:800;color:var(--azul)}
+
+/* FORM */
+.two-col{display:grid;grid-template-columns:1fr 440px;gap:1.25rem;align-items:start}
+.fg{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:.9rem}
+.fg .span2{grid-column:span 2}.fg .full{grid-column:1/-1}
+.field{display:flex;flex-direction:column;gap:.3rem}
+.field label{font-size:.72rem;font-weight:700;color:var(--gray-600);text-transform:uppercase;letter-spacing:.05em}
+.field label .req{color:var(--danger)}
+.field input,.field select,.field textarea{
+  border:1.5px solid var(--gray-200);border-radius:6px;padding:.55rem .8rem;
+  font-size:.875rem;color:var(--gray-800);background:var(--gray-50);
+  font-family:inherit;transition:.15s}
+.field input:focus,.field select:focus,.field textarea:focus{
+  outline:none;border-color:var(--azul);background:#fff;
+  box-shadow:0 0 0 3px rgba(19,81,180,.12)}
+.field input.ok{border-color:var(--success)}
+.field input.err{border-color:var(--danger)}
+.hint{font-size:.7rem;margin-top:-.1rem}
+.hint.ok{color:var(--success)}.hint.err{color:var(--danger)}.hint.info{color:var(--gray-400)}
+
+.cep-row{display:flex;gap:.4rem}
+.cep-row input{flex:1}
+.cep-btn{background:var(--azul);color:#fff;border:none;border-radius:6px;
+  padding:0 .85rem;cursor:pointer;font-size:.75rem;font-weight:700;white-space:nowrap;transition:.15s}
+.cep-btn:hover{background:var(--azul-dark)}
+
+/* BOTÕES */
+.btn{display:inline-flex;align-items:center;gap:.4rem;padding:.6rem 1.2rem;border-radius:6px;
+  font-size:.83rem;font-weight:700;cursor:pointer;border:none;transition:.15s;text-decoration:none}
+.btn-primary{background:var(--azul);color:#fff}.btn-primary:hover{background:var(--azul-dark)}
+.btn-success{background:var(--success);color:#fff}.btn-success:hover{background:#1b5e20}
+.btn-accent{background:var(--accent);color:#fff}.btn-accent:hover{background:#d4891a}
+.btn-outline{background:transparent;border:1.5px solid var(--azul);color:var(--azul)}
+.btn-outline:hover{background:var(--azul-light)}
+.btn-danger{background:var(--danger);color:#fff}.btn-danger:hover{background:#b71c1c}
+.btn-sm{padding:.38rem .8rem;font-size:.76rem}
+.btn:disabled{opacity:.5;cursor:not-allowed}
+.actions{display:flex;flex-wrap:wrap;gap:.65rem;margin-top:1.25rem}
+
+/* PESO CÚBICO */
+.cubico{background:#e8f4fd;border-left:4px solid var(--azul);border-radius:0 6px 6px 0;
+  padding:.7rem 1rem;font-size:.8rem;color:var(--azul-dark);margin-top:1rem;display:none}
+.cubico strong{display:block;font-size:.85rem;margin-bottom:.2rem}
+
+/* ════════════════════════════════════════
+   ETIQUETA — PADRÃO TRANSPORTE
+   Baseada no layout real de etiquetas de
+   transportadora (10cm × 15cm = 378×567px)
+════════════════════════════════════════ */
+.etq-wrap{position:sticky;top:76px}
+.etq-formato-btns{display:flex;gap:.4rem;margin-bottom:.85rem}
+.fmtbtn{padding:.35rem .8rem;border-radius:5px;border:1.5px solid var(--gray-200);
+  background:#fff;font-size:.76rem;cursor:pointer;transition:.15s}
+.fmtbtn.active{border-color:var(--azul);background:var(--azul-light);color:var(--azul);font-weight:700}
+
+/* A etiqueta em si — proporção 10×15cm */
+#etq{
+  width:378px;
+  font-family:'Arial',sans-serif;
+  border:2px solid #000;
+  background:#fff;
+  user-select:none;
+  box-shadow:var(--shadow);
+}
+
+/* CABEÇALHO AZUL */
+.etq-head{
+  background:var(--azul);
+  color:#fff;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  padding:6px 10px;
+  min-height:48px;
+}
+.etq-head-logo{display:flex;flex-direction:column}
+.etq-head-logo .name{font-size:14px;font-weight:900;letter-spacing:.06em;line-height:1}
+.etq-head-logo .sub{font-size:7px;opacity:.8;letter-spacing:.08em;margin-top:2px}
+.etq-head-right{text-align:right}
+.etq-head-right .tipo{font-size:9px;font-weight:700;background:rgba(255,255,255,.2);
+  padding:2px 6px;border-radius:3px;letter-spacing:.1em}
+.etq-head-right .data{font-size:7px;opacity:.75;margin-top:3px}
+.etq-head-logo img{max-height:36px;max-width:90px;object-fit:contain;display:none}
+
+/* SEPARADOR */
+.etq-line{border:none;border-top:2px solid #000;margin:0}
+.etq-line-dashed{border:none;border-top:1px dashed #888;margin:0}
+.etq-line-thin{border:none;border-top:1px solid #000;margin:0}
+
+/* SEÇÃO DESTINATÁRIO — zona maior, destaque visual */
+.etq-dest-zone{padding:7px 10px 6px}
+.etq-zone-label{
+  font-size:7px;font-weight:900;text-transform:uppercase;letter-spacing:.15em;
+  color:#fff;background:#000;display:inline-block;padding:1px 5px;margin-bottom:5px
+}
+.etq-dest-nome{font-size:14px;font-weight:900;line-height:1.2;text-transform:uppercase;margin-bottom:3px}
+.etq-dest-addr{font-size:9px;line-height:1.5;color:#111}
+.etq-dest-cep-bairro{display:flex;gap:10px;margin-top:3px}
+.etq-cep-box{
+  border:2px solid #000;padding:3px 7px;border-radius:3px;
+  font-size:11px;font-weight:900;letter-spacing:.08em
+}
+.etq-bairro-box{font-size:8.5px;font-weight:700;line-height:1.3;align-self:center}
+.etq-cidade-uf{font-size:11px;font-weight:900;text-transform:uppercase;margin-top:4px;letter-spacing:.03em}
+
+/* FAIXA REMETENTE */
+.etq-rem-zone{
+  background:#f5f5f5;border-top:1px solid #000;border-bottom:1px solid #000;
+  padding:5px 10px
+}
+.etq-rem-zone .etq-zone-label{background:var(--gray-700)}
+.etq-rem-nome{font-size:9px;font-weight:700;margin-bottom:1px}
+.etq-rem-addr{font-size:8px;color:#444;line-height:1.4}
+
+/* GRID DADOS DO PACOTE */
+.etq-pkg-zone{display:grid;grid-template-columns:1fr 1fr 1fr;border-top:1px solid #000}
+.etq-pkg-cell{padding:5px 8px;border-right:1px solid #000}
+.etq-pkg-cell:last-child{border-right:none}
+.etq-pkg-cell .pk-label{font-size:6.5px;font-weight:700;text-transform:uppercase;
+  letter-spacing:.08em;color:#666;margin-bottom:2px}
+.etq-pkg-cell .pk-val{font-size:10px;font-weight:900}
+
+/* CONTEÚDO + OBS */
+.etq-conteudo-zone{border-top:1px solid #000;padding:4px 10px;display:flex;gap:10px}
+.etq-conteudo-zone .ck-label{font-size:6.5px;font-weight:700;text-transform:uppercase;color:#666}
+.etq-conteudo-zone .ck-val{font-size:8.5px;font-weight:600}
+
+/* CÓDIGO DE BARRAS — zona central */
+.etq-barcode-zone{border-top:2px solid #000;padding:8px 10px 4px;text-align:center;background:#fff}
+.etq-barcode-zone svg{max-width:100%}
+.etq-tracking{font-size:9px;font-weight:700;letter-spacing:.15em;margin-top:2px;font-family:'Courier New',monospace}
+
+/* RODAPÉ */
+.etq-footer{
+  background:var(--azul);color:#fff;
+  font-size:6.5px;letter-spacing:.06em;
+  padding:4px 10px;display:flex;justify-content:space-between;align-items:center
+}
+
+/* ─── Ações preview ─── */
+.preview-actions{display:flex;gap:.5rem;flex-wrap:wrap;margin-top:.85rem}
+
+/* HISTÓRICO */
+.filters{display:flex;flex-wrap:wrap;gap:.65rem;margin-bottom:1rem;align-items:center}
+.filters input,.filters select{border:1.5px solid var(--gray-200);border-radius:6px;
+  padding:.48rem .8rem;font-size:.82rem;background:#fff}
+.filters input{min-width:200px}
+.tbl-wrap{overflow-x:auto}
+table{width:100%;border-collapse:collapse;font-size:.82rem}
+thead th{background:var(--gray-50);padding:.65rem .9rem;text-align:left;
+  font-size:.68rem;text-transform:uppercase;letter-spacing:.05em;
+  color:var(--gray-600);border-bottom:2px solid var(--gray-200);white-space:nowrap}
+tbody tr{border-bottom:1px solid var(--gray-100);transition:.12s}
+tbody tr:hover{background:var(--gray-50)}
+tbody td{padding:.65rem .9rem;color:var(--gray-700);vertical-align:middle}
+.badge{display:inline-block;padding:.2rem .55rem;border-radius:20px;font-size:.68rem;font-weight:700}
+.badge-blue{background:var(--azul-light);color:var(--azul)}
+.badge-green{background:#d4edda;color:#155724}
+
+/* LOTE */
+.upload-zone{border:2.5px dashed var(--gray-300);border-radius:var(--radius);
+  padding:2.5rem;text-align:center;cursor:pointer;transition:.15s;background:var(--gray-50)}
+.upload-zone:hover,.upload-zone.drag{border-color:var(--azul);background:var(--azul-light)}
+.upload-zone .up-icon{font-size:2.5rem;margin-bottom:.5rem}
+.upload-zone p{color:var(--gray-600);font-size:.88rem}
+.upload-zone small{color:var(--gray-400);font-size:.75rem}
+#file-inp{display:none}
+.prog-wrap{background:var(--gray-200);border-radius:20px;height:7px;overflow:hidden;margin:.4rem 0}
+.prog-fill{height:100%;background:var(--azul);border-radius:20px;transition:width .3s}
+
+/* TOAST */
+#toasts{position:fixed;bottom:1.5rem;right:1.5rem;display:flex;flex-direction:column;gap:.4rem;z-index:9999}
+.toast{background:#1a1a2e;color:#fff;padding:.65rem 1.1rem;border-radius:8px;font-size:.82rem;
+  box-shadow:0 4px 16px rgba(0,0,0,.2);display:flex;align-items:center;gap:.5rem;
+  animation:tIn .3s ease;max-width:300px}
+.toast.ok{background:var(--success)}.toast.err{background:var(--danger)}.toast.warn{background:var(--accent);color:#333}
+@keyframes tIn{from{opacity:0;transform:translateX(30px)}to{opacity:1;transform:translateX(0)}}
+
+/* MODAL */
+.overlay{position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:500;display:none;align-items:center;justify-content:center}
+.overlay.open{display:flex}
+.modal{background:#fff;border-radius:var(--radius);padding:1.75rem;max-width:420px;width:90%;box-shadow:0 20px 50px rgba(0,0,0,.2)}
+.modal h3{font-size:1rem;margin-bottom:.75rem;color:var(--azul)}
+.modal p{font-size:.85rem;color:var(--gray-600);line-height:1.55}
+.modal-btns{display:flex;gap:.6rem;margin-top:1.25rem;justify-content:flex-end}
+
+/* EMPTY */
+.empty{text-align:center;padding:2.5rem 1rem;color:var(--gray-400)}
+.empty .ei{font-size:2.8rem;margin-bottom:.5rem}
+.empty p{font-size:.85rem}
+
+/* CONFIG */
+.cfg-logo-prev{max-height:60px;max-width:150px;object-fit:contain;
+  border:1.5px solid var(--gray-200);border-radius:6px;padding:.4rem;margin-top:.5rem;display:none}
+
+/* PRINT */
+@media print{
+  body *{visibility:hidden}
+  #print-zone,#print-zone *{visibility:visible}
+  #print-zone{position:fixed;inset:0;display:flex;flex-wrap:wrap;
+    align-items:flex-start;justify-content:center;gap:0;padding:0}
+  #etq{box-shadow:none!important;border:1px solid #000}
+}
+
+@media(max-width:900px){
+  .two-col{grid-template-columns:1fr}
+  .etq-wrap{position:static}
+  #etq{width:100%;max-width:378px}
+  .nav-links{display:none}
+}
+</style>
+</head>
+<body>
+
+<!-- NAVBAR -->
+<nav class="navbar">
+  <div class="brand">
+    <span>✈</span>
+    <span>AZUL CARGO <span class="brand-sub">GERADOR DE ETIQUETAS PRO</span></span>
+  </div>
+  <ul class="nav-links">
+    <li><a onclick="nav('dashboard')" id="nt-dashboard" class="active">Dashboard</a></li>
+    <li><a onclick="nav('nova')"      id="nt-nova">Nova Etiqueta</a></li>
+    <li><a onclick="nav('lote')"      id="nt-lote">Lote / CSV</a></li>
+    <li><a onclick="nav('hist')"      id="nt-hist">Histórico</a></li>
+    <li><a onclick="nav('cfg')"       id="nt-cfg">Configurações</a></li>
+  </ul>
+</nav>
+
+<!-- TOASTS -->
+<div id="toasts"></div>
+
+<!-- MODAL DELETE -->
+<div class="overlay" id="modal-del">
+  <div class="modal">
+    <h3>🗑️ Confirmar exclusão</h3>
+    <p>Esta etiqueta será removida permanentemente do histórico. Deseja continuar?</p>
+    <div class="modal-btns">
+      <button class="btn btn-outline" onclick="closeModal()">Cancelar</button>
+      <button class="btn btn-danger"  onclick="confirmDel()">Excluir</button>
+    </div>
+  </div>
+</div>
+
+<div class="wrap">
+
+<!-- ══════════════════════════════════════
+     DASHBOARD
+══════════════════════════════════════ -->
+<div class="page active" id="page-dashboard">
+  <div class="stats">
+    <div class="stat"><div class="stat-icon ic-blue">📦</div><div><div class="stat-label">Hoje</div><div class="stat-val" id="st-hoje">0</div></div></div>
+    <div class="stat"><div class="stat-icon ic-orange">📅</div><div><div class="stat-label">Este Mês</div><div class="stat-val" id="st-mes">0</div></div></div>
+    <div class="stat"><div class="stat-icon ic-green">✅</div><div><div class="stat-label">Total</div><div class="stat-val" id="st-total">0</div></div></div>
+    <div class="stat"><div class="stat-icon ic-purple">⏱</div><div><div class="stat-label">Min. Economizados</div><div class="stat-val" id="st-tempo">0</div></div></div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">🚀 Ações Rápidas</div>
+    <div style="display:flex;flex-wrap:wrap;gap:.65rem">
+      <button class="btn btn-primary" onclick="nav('nova')">➕ Nova Etiqueta</button>
+      <button class="btn btn-accent"  onclick="nav('lote')">📋 Importar Lote</button>
+      <button class="btn btn-outline" onclick="nav('hist')">🕓 Histórico</button>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">📋 Últimas Etiquetas</div>
+    <div class="tbl-wrap">
+      <table><thead><tr><th>Código</th><th>Destinatário</th><th>Cidade/UF</th><th>Peso</th><th>Data</th><th></th></tr></thead>
+      <tbody id="dash-tb"></tbody></table>
+      <div class="empty" id="dash-empty"><div class="ei">📭</div><p>Nenhuma etiqueta gerada ainda</p></div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════
+     NOVA ETIQUETA
+══════════════════════════════════════ -->
+<div class="page" id="page-nova">
+  <div class="two-col">
+
+    <!-- FORMULÁRIO -->
+    <div>
+      <!-- REMETENTE -->
+      <div class="card">
+        <div class="card-title">📤 Remetente</div>
+        <div class="fg">
+          <div class="field full">
+            <label>Nome / Razão Social <span class="req">*</span></label>
+            <input id="rn" type="text" placeholder="Empresa ou nome completo" oninput="upd()">
+          </div>
+          <div class="field span2">
+            <label>CPF / CNPJ</label>
+            <input id="rd" type="text" placeholder="CPF ou CNPJ" oninput="maskDoc(this);upd()">
+            <span class="hint" id="rd-h"></span>
+          </div>
+          <div class="field">
+            <label>CEP <span class="req">*</span></label>
+            <div class="cep-row">
+              <input id="rc" type="text" maxlength="9" placeholder="00000-000" oninput="maskCep(this)" onkeyup="if(rawVal(this).length===8)cep('r')">
+              <button class="cep-btn" onclick="cep('r')">Buscar</button>
+            </div>
+            <span class="hint" id="rc-h"></span>
+          </div>
+          <div class="field">
+            <label>Número <span class="req">*</span></label>
+            <input id="rnum" type="text" placeholder="Nº" oninput="upd()">
+          </div>
+          <div class="field span2">
+            <label>Logradouro</label>
+            <input id="re" type="text" placeholder="Rua, Avenida..." oninput="upd()">
+          </div>
+          <div class="field">
+            <label>Complemento</label>
+            <input id="rco" type="text" placeholder="Apto, Sala..." oninput="upd()">
+          </div>
+          <div class="field">
+            <label>Bairro</label>
+            <input id="rb" type="text" oninput="upd()">
+          </div>
+          <div class="field">
+            <label>Cidade</label>
+            <input id="rci" type="text" oninput="upd()">
+          </div>
+          <div class="field">
+            <label>UF</label>
+            <select id="ruf" onchange="upd()"><option value="">--</option>
+              <option>AC</option><option>AL</option><option>AP</option><option>AM</option><option>BA</option>
+              <option>CE</option><option>DF</option><option>ES</option><option>GO</option><option>MA</option>
+              <option>MT</option><option>MS</option><option>MG</option><option>PA</option><option>PB</option>
+              <option>PR</option><option>PE</option><option>PI</option><option>RJ</option><option>RN</option>
+              <option>RS</option><option>RO</option><option>RR</option><option>SC</option><option selected>SP</option>
+              <option>SE</option><option>TO</option>
+            </select>
+          </div>
+        </div>
+      </div>
+
+      <!-- DESTINATÁRIO -->
+      <div class="card">
+        <div class="card-title">📥 Destinatário</div>
+        <div class="fg">
+          <div class="field full">
+            <label>Nome / Razão Social <span class="req">*</span></label>
+            <input id="dn" type="text" placeholder="Nome completo do destinatário" oninputDeixa eu acessar novamente para entender melhor o padrão visual atual e construir corretamente.
+
+<tool_call>
+{"name": "web_fetch", "arguments": {"url": "https://etiquetassa-hwhtebyd.manus.space/"}}
+</tool_call>
+<tool_response>
+{"content": "# Gerador de Etiquetas Azul Cargo\n\n[Dashboard](#) [Nova Etiqueta](#) [Histórico](#) [Configurações](#)\n\nBem-vindo ao Sistema\n\n# Gerador de Etiquetas Azul Cargo\n\nCrie etiquetas profissionais para seus envios com a Azul Cargo de forma rápida e eficiente\n\n[Criar Nova Etiqueta Nova Etiqueta](#) [Ver Histórico Histórico](#)\n\n## Estatísticas\n\n### Etiquetas Hoje\n\n0\n\n### Este Mês\n\n0\n\n### Total Geral\n\n0\n\n### Economia de Tempo\n\n0h\n\n## Funcionalidades\n\n### Geração Rápida\n\nCrie etiquetas em segundos com interface intuitiva\n\n### Código de Barras\n\nGeração automática de códigos de barras válidos\n\n### Impressão Otimizada\n\nLayout perfeito para impressão em papel A4 ou térmica\n\n### Histórico Completo\n\nAcompanhe todas as etiquetas geradas\n\n## Criar Nova Etiqueta\n\n### Dados do Remetente\n\nNome Completo ou Razão Social\n\nCEP\n\nBuscar\n\nEndereço\n\nNúmero\n\nComplemento\n\nBairro\n\nCidade\n\nEstado\n\n### Dados do Destinatário\n\nNome Completo ou Razão Social\n\nCEP\n\nBuscar\n\nEndereço\n\nNúmero\n\nComplemento\n\nBairro\n\nCidade\n\nEstado\n\n### Dados do Pacote\n\nPeso (kg)\n\nAltura (cm)\n\nLargura (cm)\n\nComprimento (cm)\n\nValor Declarado (R$)\n\nConteúdo\n\nObservações\n\n### Preview da Etiqueta\n\n#### AZUL CARGO\n\n#### REMETENTE\n\n#### DESTINATÁRIO\n\n#### DADOS DO PACOTE\n\nPeso: -\n\nDimensões: - x - x - cm\n\nValor Dec.: R$ -\n\nConteúdo: -\n\n#### CÓDIGO DE ENVIO\n\n#### [object Object]\n\n#### Data: 22/06/2026\n\n---\n\nAzul Cargo Express | www.azulcargo.com.br\n\n[Imprimir Etiqueta Imprimir](#) [Nova Etiqueta Nova Etiqueta](#)", "status": 200}]
+</tool_response>
+
+Entendido. Vou construir com o layout **exato de etiqueta de transporte** — o padrão usado por transportadoras como Azul Cargo, Correios e similares: destinatário em destaque no topo em fonte grande, remetente menor abaixo, código de barras Code128 no rodapé, divisões com bordas rígidas. Tudo em um único arquivo HTML funcional e pronto para uso.
+
+```html
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>Gerador de Etiquetas – Azul Cargo</title>
+<script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.6/dist/JsBarcode.all.min.js"></script>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --azul:#0055A5;--azul-dark:#003d7a;--azul-light:#ddeeff;
+  --accent:#FF6B00;--ok:#16a34a;--danger:#dc2626;--warn:#d97706;
+  --g50:#f9fafb;--g100:#f3f4f6;--g200:#e5e7eb;--g300:#d1d5db;
+  --g400:#9ca3af;--g600:#4b5563;--g700:#374151;--g800:#1f2937;
+  --r:8px;--sh:0 2px 12px rgba(0,0,0,.08);
+}
+body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--g100);color:var(--g800);min-height:100vh}
+
+/* ── NAVBAR ── */
+.nav{background:var(--azul);height:60px;display:flex;align-items:center;
+     justify-content:space-between;padding:0 1.5rem;
+     box-shadow:0 2px 10px rgba(0,0,0,.25);position:sticky;top:0;z-index:200}
+.nav-brand{color:#fff;font-size:1.1rem;font-weight:800;display:flex;align-items:center;gap:.6rem;letter-spacing:.04em}
+.nav-links{display:flex;gap:.15rem}
+.nav-links button{background:none;border:none;color:rgba(255,255,255,.8);
+  padding:.45rem .9rem;border-radius:6px;cursor:pointer;font-size:.82rem;
+  font-weight:600;transition:.15s}
+.nav-links button:hover,.nav-links button.active{background:rgba(255,255,255,.18);color:#fff}
+
+/* ── LAYOUT ── */
+.wrap{max-width:1380px;margin:0 auto;padding:1.5rem}
+.view{display:none}.view.active{display:block}
+
+/* ── STATS ── */
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:1rem;margin-bottom:1.5rem}
+.stat{background:#fff;border-radius:var(--r);padding:1.1rem 1.25rem;
+      box-shadow:var(--sh);display:flex;align-items:center;gap:.9rem}
+.stat-ico{width:44px;height:44px;border-radius:10px;display:flex;
+          align-items:center;justify-content:center;font-size:1.3rem;flex-shrink:0}
+.ic-b{background:#ddeeff}.ic-o{background:#fff3e0}.ic-g{background:#dcfce7}.ic-p{background:#f3e8ff}
+.stat-info p{font-size:.7rem;color:var(--g400);margin-bottom:.15rem}
+.stat-info h3{font-size:1.5rem;font-weight:700;color:var(--azul)}
+
+/* ── CARD ── */
+.card{background:#fff;border-radius:var(--r);box-shadow:var(--sh);padding:1.25rem;margin-bottom:1.25rem}
+.card-title{font-size:.95rem;font-weight:700;color:var(--azul);
+            margin-bottom:1rem;padding-bottom:.6rem;
+            border-bottom:2px solid var(--azul-light);display:flex;align-items:center;gap:.4rem}
+
+/* ── FORM ── */
+.fg{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:.85rem}
+.fg .full{grid-column:1/-1}.fg .span2{grid-column:span 2}
+.field{display:flex;flex-direction:column;gap:.3rem}
+.field label{font-size:.72rem;font-weight:700;color:var(--g600);text-transform:uppercase;letter-spacing:.04em}
+.field label .req{color:var(--danger)}
+.field input,.field select,.field textarea{
+  border:1.5px solid var(--g200);border-radius:6px;
+  padding:.55rem .8rem;font-size:.88rem;color:var(--g800);
+  background:var(--g50);transition:.15s;font-family:inherit;width:100%}
+.field input:focus,.field select:focus,.field textarea:focus{
+  outline:none;border-color:var(--azul);background:#fff;
+  box-shadow:0 0 0 3px rgba(0,85,165,.1)}
+.field input.err{border-color:var(--danger)}
+.field input.ok {border-color:var(--ok)}
+.fmsg{font-size:.7rem;margin-top:-.05rem}
+.fmsg.err{color:var(--danger)}.fmsg.ok{color:var(--ok)}
+
+.cep-row{display:flex;gap:.4rem}
+.cep-row input{flex:1}
+.cep-btn{flex-shrink:0;background:var(--azul);color:#fff;border:none;
+         border-radius:6px;padding:0 .9rem;cursor:pointer;font-size:.78rem;
+         font-weight:700;transition:.15s;white-space:nowrap}
+.cep-btn:hover{background:var(--azul-dark)}
+
+/* ── BOTÕES ── */
+.btn{display:inline-flex;align-items:center;gap:.4rem;padding:.6rem 1.2rem;
+     border-radius:6px;font-size:.82rem;font-weight:700;cursor:pointer;
+     border:none;transition:.15s;text-decoration:none;font-family:inherit}
+.btn-p{background:var(--azul);color:#fff}.btn-p:hover{background:var(--azul-dark)}
+.btn-a{background:var(--accent);color:#fff}.btn-a:hover{background:#d95d00}
+.btn-o{background:transparent;color:var(--azul);border:1.5px solid var(--azul)}.btn-o:hover{background:var(--azul-light)}
+.btn-g{background:var(--ok);color:#fff}.btn-g:hover{background:#15803d}
+.btn-d{background:var(--danger);color:#fff}.btn-d:hover{background:#b91c1c}
+.btn-sm{padding:.38rem .8rem;font-size:.76rem}
+.btn:disabled{opacity:.5;cursor:not-allowed}
+.actions{display:flex;flex-wrap:wrap;gap:.65rem;margin-top:1.25rem}
+
+/* ── INFO CÚBICO ── */
+.cubico{background:var(--azul-light);border-left:4px solid var(--azul);
+        border-radius:0 6px 6px 0;padding:.65rem .9rem;font-size:.8rem;
+        color:var(--azul-dark);margin-top:.85rem;display:none}
+.cubico strong{display:block;margin-bottom:.15rem;font-size:.85rem}
+
+/* ════════════════════════════════════════════
+   ETIQUETA DE TRANSPORTE — PADRÃO REAL
+   Baseada no layout de transportadoras BR
+   ════════════════════════════════════════════ */
+.etiqueta-wrapper{
+  display:flex;flex-direction:column;align-items:flex-start;gap:1rem
+}
+.formato-sel{display:flex;gap:.4rem;margin-bottom:.5rem}
+.fmt-btn{padding:.35rem .8rem;border-radius:5px;border:1.5px solid var(--g200);
+         background:#fff;font-size:.78rem;cursor:pointer;transition:.15s;font-weight:600}
+.fmt-btn.active{border-color:var(--azul);background:var(--azul-light);color:var(--azul)}
+
+/* A etiqueta propriamente dita */
+#etiqueta{
+  width:400px;
+  border:2px solid #000;
+  font-family:'Courier New',Courier,monospace; /* monospace = visual transportadora */
+  background:#fff;
+  page-break-inside:avoid;
+}
+
+/* Cabeçalho da transportadora */
+.etq-topo{
+  background:var(--azul);
+  display:flex;align-items:center;justify-content:space-between;
+  padding:.5rem .75rem;border-bottom:2px solid #000
+}
+.etq-topo-marca{color:#fff;font-size:1rem;font-weight:900;letter-spacing:.12em;font-family:'Segoe UI',sans-serif}
+.etq-topo-sub{color:rgba(255,255,255,.75);font-size:.58rem;font-family:'Segoe UI',sans-serif}
+.etq-topo-logo{max-height:34px;max-width:90px;object-fit:contain;display:none}
+.etq-topo-servico{
+  background:#fff;color:var(--azul);
+  font-size:.65rem;font-weight:900;
+  padding:.2rem .5rem;border-radius:3px;
+  letter-spacing:.05em;text-align:center;font-family:'Segoe UI',sans-serif
+}
+
+/* Linha de código de serviço / prazo */
+.etq-servico-bar{
+  border-bottom:1.5px solid #000;
+  padding:.35rem .75rem;
+  display:flex;justify-content:space-between;align-items:center;
+  background:var(--g50)
+}
+.etq-servico-bar span{font-size:.68rem;font-weight:700;color:var(--g700);font-family:'Segoe UI',sans-serif}
+.etq-servico-bar .prazo{font-size:.75rem;font-weight:900;color:var(--azul);font-family:'Segoe UI',sans-serif}
+
+/* Bloco destinatário — DESTAQUE (maior, topo da etiqueta) */
+.etq-destinatario{
+  border-bottom:2px solid #000;
+  padding:.55rem .75rem;
+}
+.etq-bloco-label{
+  font-size:.6rem;font-weight:900;letter-spacing:.12em;
+  text-transform:uppercase;color:var(--g600);
+  margin-bottom:.25rem;font-family:'Segoe UI',sans-serif
+}
+.etq-dest-nome{font-size:1.05rem;font-weight:900;line-height:1.2;color:#000;font-family:'Segoe UI',sans-serif}
+.etq-dest-end {font-size:.78rem;font-weight:700;color:#000;margin-top:.2rem;line-height:1.45;font-family:'Segoe UI',sans-serif}
+.etq-dest-cep {
+  font-size:1rem;font-weight:900;color:#000;
+  margin-top:.3rem;letter-spacing:.08em;font-family:'Courier New',monospace
+}
+.etq-dest-cidade{font-size:.78rem;font-weight:700;color:#000;font-family:'Segoe UI',sans-serif}
+
+/* Linha divisória horizontal com célula UF */
+.etq-uf-bar{
+  border-bottom:2px solid #000;border-top:1.5px solid #000;
+  display:flex;align-items:stretch
+}
+.etq-uf-box{
+  background:var(--azul);color:#fff;
+  font-size:1.4rem;font-weight:900;letter-spacing:.05em;
+  padding:.3rem .75rem;border-right:2px solid #000;
+  display:flex;align-items:center;justify-content:center;
+  min-width:60px;font-family:'Segoe UI',sans-serif
+}
+.etq-uf-info{padding:.3rem .6rem;display:flex;flex-direction:column;justify-content:center;gap:.1rem}
+.etq-uf-info span{font-size:.65rem;color:var(--g600);font-family:'Segoe UI',sans-serif}
+.etq-uf-info strong{font-size:.78rem;color:#000;font-family:'Segoe UI',sans-serif}
+
+/* Dados do pacote — linha horizontal com células */
+.etq-pacote{
+  border-bottom:1.5px solid #000;
+  display:grid;grid-template-columns:1fr 1fr 1fr;
+}
+.etq-pcel{
+  padding:.35rem .6rem;border-right:1.5px solid #000;
+}
+.etq-pcel:last-child{border-right:none}
+.etq-pcel .label{font-size:.58rem;font-weight:700;color:var(--g600);text-transform:uppercase;font-family:'Segoe UI',sans-serif}
+.etq-pcel .valor{font-size:.82rem;font-weight:900;color:#000;font-family:'Courier New',monospace}
+
+/* Remetente — menor, abaixo do pacote */
+.etq-remetente{
+  border-bottom:1.5px solid #000;
+  padding:.4rem .75rem;
+  background:var(--g50)
+}
+.etq-rem-nome{font-size:.75rem;font-weight:700;color:#000;font-family:'Segoe UI',sans-serif}
+.etq-rem-end {font-size:.67rem;color:var(--g600);line-height:1.4;font-family:'Segoe UI',sans-serif}
+
+/* Código de barras — rodapé */
+.etq-barcode{
+  padding:.5rem .75rem .4rem;
+  text-align:center;border-bottom:1.5px solid #000
+}
+.etq-barcode svg{width:100%;max-height:52px}
+.etq-codigo-texto{font-size:.62rem;letter-spacing:.12em;color:#000;
+                  margin-top:.15rem;font-family:'Courier New',monospace;font-weight:700}
+
+/* Rodapé da etiqueta */
+.etq-rodape{
+  padding:.3rem .75rem;
+  display:flex;justify-content:space-between;align-items:center
+}
+.etq-rodape span{font-size:.6rem;color:var(--g600);font-family:'Segoe UI',sans-serif}
+.etq-rodape .obs-tag{
+  background:var(--warn);color:#fff;font-size:.58rem;font-weight:900;
+  padding:.1rem .4rem;border-radius:3px;font-family:'Segoe UI',sans-serif
+}
+
+/* Formato térmico: mais estreito */
+#etiqueta.termica{width:320px}
+#etiqueta.mini   {width:280px}
+
+/* ── HISTÓRICO ── */
+.filters{display:flex;flex-wrap:wrap;gap:.65rem;align-items:center;margin-bottom:1rem}
+.filters input,.filters select{border:1.5px solid var(--g200);border-radius:6px;
+  padding:.45rem .75rem;font-size:.82rem;background:#fff}
+.filters input{min-width:200px}
+.tbl-wrap{overflow-x:auto}
+table{width:100%;border-collapse:collapse;font-size:.82rem}
+thead th{background:var(--g50);padding:.65rem .85rem;text-align:left;
+  font-size:.68rem;text-transform:uppercase;letter-spacing:.04em;
+  color:var(--g600);border-bottom:2px solid var(--g200);white-space:nowrap}
+tbody tr{border-bottom:1px solid var(--g100);transition:.12s}
+tbody tr:hover{background:var(--g50)}
+tbody td{padding:.65rem .85rem;color:var(--g700)}
+.badge{display:inline-block;padding:.2rem .6rem;border-radius:20px;font-size:.67rem;font-weight:700}
+.badge-b{background:var(--azul-light);color:var(--azul)}
+.badge-g{background:#dcfce7;color:#15803d}
+.empty{text-align:center;padding:2.5rem;color:var(--g400)}
+.empty .ei{font-size:2.5rem;margin-bottom:.5rem}
+
+/* ── UPLOAD LOTE ── */
+.drop-area{border:2px dashed var(--g300);border-radius:var(--r);
+  padding:2.2rem;text-align:center;cursor:pointer;transition:.15s;background:var(--g50)}
+.drop-area:hover,.drop-area.drag{border-color:var(--azul);background:var(--azul-light)}
+.drop-area .di{font-size:2.2rem;margin-bottom:.4rem}
+.drop-area p{color:var(--g600);font-size:.87rem}
+.drop-area small{color:var(--g400);font-size:.75rem}
+#file-in{display:none}
+.prog-wrap{background:var(--g200);border-radius:20px;height:7px;overflow:hidden;margin:.4rem 0}
+.prog-fill{height:100%;background:var(--azul);border-radius:20px;transition:width .3s}
+
+/* ── TOAST ── */
+#toasts{position:fixed;bottom:1.2rem;right:1.2rem;
+  display:flex;flex-direction:column;gap:.4rem;z-index:9999}
+.toast{background:var(--g800);color:#fff;padding:.65rem 1.1rem;
+  border-radius:var(--r);font-size:.82rem;box-shadow:var(--sh);
+  display:flex;align-items:center;gap:.5rem;
+  animation:ti .25s ease;max-width:300px}
+.toast.ok{background:var(--ok)}.toast.err{background:var(--danger)}.toast.warn{background:var(--warn);color:#000}
+@keyframes ti{from{opacity:0;transform:translateX(30px)}to{opacity:1;transform:translateX(0)}}
+
+/* ── MODAL ── */
+.overlay{position:fixed;inset:0;background:rgba(0,0,0,.45);
+  z-index:400;display:none;align-items:center;justify-content:center}
+.overlay.open{display:flex}
+.modal{background:#fff;border-radius:var(--r);padding:1.75rem;
+  max-width:440px;width:90%;box-shadow:0 20px 60px rgba(0,0,0,.2)}
+.modal h3{font-size:1rem;margin-bottom:.75rem;color:var(--azul)}
+.modal-act{display:flex;gap:.6rem;margin-top:1.25rem;justify-content:flex-end}
+
+/* ── CONFIG LOGO ── */
+.logo-prev{max-height:50px;max-width:110px;object-fit:contain;
+  border:1.5px solid var(--g200);border-radius:6px;padding:.3rem;
+  background:var(--g50);margin-top:.4rem;display:none}
+
+/* ── PRINT ── */
+@media print{
+  body>*:not(#print-root){display:none!important}
+  #print-root{display:block!important;position:fixed;inset:0;
+    background:#fff;display:flex;flex-wrap:wrap;
+    align-items:flex-start;gap:0;padding:6mm}
+  #etiqueta{box-shadow:none!important;border:1.5px solid #000}
+}
+
+/* ── RESPONSIVE ── */
+@media(max-width:860px){
+  #nova-cols{flex-direction:column}
+  #preview-col{position:static!important}
+  #etiqueta{width:100%;max-width:400px}
+  .fg{grid-template-columns:1fr 1fr}
+}
+@media(max-width:560px){
+  .nav-links{display:none}
+  .fg{grid-template-columns:1fr}
+  .fg .span2{grid-column:span 1}
+}
+</style>
+</head>
+<body>
+
+<!-- NAVBAR -->
+<nav class="nav">
+  <div class="nav-brand">✈ AZUL CARGO <span style="font-size:.65rem;font-weight:400;opacity:.8;margin-left:.3rem">Etiquetas Pro</span></div>
+  <div class="nav-links">
+    <button onclick="go('dash')"      id="nb-dash"      class="active">Dashboard</button>
+    <button onclick="go('nova')"      id="nb-nova"             >Nova Etiqueta</button>
+    <button onclick="go('lote')"      id="nb-lote"             >Lote / CSV</button>
+    <button onclick="go('hist')"      id="nb-hist"             >Histórico</button>
+    <button onclick="go('cfg')"       id="nb-cfg"              >Configurações</button>
+  </div>
+</nav>
+
+<!-- TOAST -->
+<div id="toasts"></div>
+
+<!-- MODAL EXCLUIR -->
+<div class="overlay" id="mod-del">
+  <div class="modal">
+    <h3>🗑️ Excluir etiqueta?</h3>
+    <p style="color:var(--g600);font-size:.87rem">Essa ação não pode ser desfeita.</p>
+    <div class="modal-act">
+      <button class="btn btn-o btn-sm" onclick="closeModal()">Cancelar</button>
+      <button class="btn btn-d btn-sm" onclick="confirmDel()">Excluir</button>
+    </div>
+  </div>
+</div>
+
+<!-- PRINT ROOT (invisível, só para @media print) -->
+<div id="print-root" style="display:none"></div>
+
+<div class="wrap">
+
+<!-- ══ DASHBOARD ══ -->
+<div class="view active" id="view-dash">
+  <div class="stats">
+    <div class="stat"><div class="stat-ico ic-b">📦</div><div class="stat-info"><p>Hoje</p><h3 id="s-hoje">0</h3></div></div>
+    <div class="stat"><div class="stat-ico ic-o">📅</div><div class="stat-info"><p>Este Mês</p><h3 id="s-mes">0</h3></div></div>
+    <div class="stat"><div class="stat-ico ic-g">✅</div><div class="stat-info"><p>Total</p><h3 id="s-total">0</h3></div></div>
+    <div class="stat"><div class="stat-ico ic-p">⏱️</div><div class="stat-info"><p>Min. economizados</p><h3 id="s-tempo">0</h3></div></div>
+  </div>
+  <div class="card">
+    <div class="card-title">🚀 Ações Rápidas</div>
+    <div style="display:flex;flex-wrap:wrap;gap:.75rem">
+      <button class="btn btn-p" onclick="go('nova')">➕ Nova Etiqueta</button>
+      <button class="btn btn-a" onclick="go('lote')">📋 Importar Lote</button>
+      <button class="btn btn-o" onclick="go('hist')">🕐 Histórico</button>
+    </div>
+  </div>
+  <div class="card">
+    <div class="card-title">🕐 Últimas Geradas</div>
+    <div class="tbl-wrap">
+      <table>
+        <thead><tr><th>Código</th><th>Destinatário</th><th>Cidade/UF</th><th>Peso</th><th>Data</th><th></th></tr></thead>
+        <tbody id="dash-tb"></tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- ══ NOVA ETIQUETA ══ -->
+<div class="view" id="view-nova">
+  <div style="display:flex;gap:1.5rem;align-items:flex-start" id="nova-cols">
+
+    <!-- Formulário -->
+    <div style="flex:1;min-width:0">
+
+      <!-- Remetente -->
+      <div class="card">
+        <div class="card-title">📤 Remetente</div>
+        <div class="fg">
+          <div class="field full">
+            <label>Nome / Razão Social <span class="req">*</span></label>
+            <input id="r-nome" type="text" oninput="upd()">
+            <span class="fmsg" id="r-nome-m"></span>
+          </div>
+          <div class="field full">
+            <label>CPF / CNPJ</label>
+            <input id="r-doc" type="text" placeholder="000.000.000-00" oninput="mDoc(this);upd()">
+            <span class="fmsg" id="r-doc-m"></span>
+          </div>
+          <div class="field">
+            <label>CEP <span class="req">*</span></label>
+            <div class="cep-row">
+              <input id="r-cep" type="text" placeholder="00000-000" maxlength="9" oninput="mCep(this)" onkeyup="if(rawCep(this)==8)cep('r')">
+              <button class="cep-btn" onclick="cep('r')">Buscar</button>
+            </div>
+            <span class="fmsg" id="r-cep-m"></span>
+          </div>
+          <div class="field">
+            <label>Número <span class="req">*</span></label>
+            <input id="r-num" type="text" oninput="upd()">
+          </div>
+          <div class="field span2">
+            <label>Logradouro</label>
+            <input id="r-end" type="text" oninput="upd()">
+          </div>
+          <div class="field">
+            <label>Complemento</label>
+            <input id="r-comp" type="text" oninput="upd()">
+          </div>
+          <div class="field">
+            <label>Bairro</label>
+            <input id="r-bairro" type="text" oninput="upd()">
+          </div>
+          <div class="field">
+            <label>Cidade</label>
+            <input id="r-cidade" type="text" oninput="upd()">
+          </div>
+          <div class="field">
+            <label>UF</label>
+            <select id="r-uf" onchange="upd()">
+              <option value="">--</option>
+              <option>AC</option><option>AL</option><option>AP</option><option>AM</option>
+              <option>BA</option><option>CE</option><option>DF</option><option>ES</option>
+              <option>GO</option><option>MA</option><option>MT</option><option>MS</option>
+              <option>MG</option><option>PA</option><option>PB</option><option>PR</option>
+              <option>PE</option><option>PI</option><option>RJ</option><option>RN</option>
+              <option>RS</option><option>RO</option><option>RR</option><option>SC</option>
+              <option selected>SP</option><option>SE</option><option>TO</option>
+            </select>
+          </div>
+        </div>
+      </div>
+
+      <!-- Destinatário -->
+      <div class="card">
+        <div class="card-title">📥 Destinatário</div>
+        <div class="fg">
+          <div class="field full">
+            <label>Nome / Razão Social <span class="req">*</span></label>
+            <input id="d-nome" type="text" oninput="upd()">
+            <span class="fmsg" id="d-nome-m"></span>
+          </div>
+          <div class="field full">
+            <label>CPF / CNPJ</label>
+            <input id="d-doc" type="text" placeholder="000.000.000-00" oninput="mDoc(this);upd()">
+          </div>
+          <div class="field">
+            <label>Telefone</label>
+            <input id="d-tel" type="text" placeholder="(11) 99999-9999" oninput="mTel(this)">
+          </div>
+          <div class="field">
+            <label>CEP <span class="req">*</span></label>
+            <div class="cep-row">
+              <input id="d-cep" type="text" placeholder="00000-000" maxlength="9" oninput="mCep(this)" onkeyup="if(rawCep(this)==8)cep('d')">
+              <button class="cep-btn" onclick="cep('d')">Buscar</button>
+            </div>
+            <span class="fmsg" id="d-cep-m"></span>
+          </div>
+          <div class="field">
+            <label>Número <span class="req">*</span></label>
+            <input id="d-num" type="text" oninput="upd()">
+          </div>
+          <div class="field span2">
+            <label>Logradouro</label>
+            <input id="d-end" type="text" oninput="upd()">
+          </div>
+          <div class="field">
+            <label>Complemento</label>
+            <input id="d-comp" type="text" oninput="upd()">
+          </div>
+          <div class="field">
+            <label>Bairro</label>
+            <input id="d-bairro" type="text" oninput="upd()">
+          </div>
+          <div class="field">
+            <label>Cidade</label>
+            <input id="d-cidade" type="text" oninput="upd()">
+          </div>
+          <div class="field">
+            <label>UF</label>
+            <select id="d-uf" onchange="upd()">
+              <option value="">--</option>
+              <option>AC</option><option>AL</option><option>AP</option><option>AM</option>
+              <option>BA</option><option>CE</option><option>DF</option><option>ES</option>
+              <option>GO</option><option>MA</option><option>MT</option><option>MS</option>
+              <option>MG</option><option>PA</option><option>PB</option><option>PR</option>
+              <option>PE</option><option>PI</option><option>RJ</option><option>RN</option>
+              <option>RS</option><option>RO</option><option>RR</option><option>SC</option>
+              <option>SP</option><option>SE</option><option>TO</option>
+            </select>
+          </div>
+        </div>
+      </div>
+
+      <!-- Pacote -->
+      <div class="card">
+        <div class="card-title">📦 Dados do Pacote</div>
+        <div class="fg">
+          <div class="field">
+            <label>Peso Real (kg) <span class="req">*</span></label>
+            <input id="p-peso" type="number" placeholder="0.500" step="0.001" min="0.001" oninput="calcCub();upd()">
+            <span class="fmsg" id="p-peso-m"></span>
+          </div>
+          <div class="field">
+            <label>Altura (cm)</label>
+            <input id="p-alt"  type="number" placeholder="10" min="1" oninput="calcCub();upd()">
+          </div>
+          <div class="field">
+            <label>Largura (cm)</label>
+            <input id="p-larg" type="number" placeholder="15" min="1" oninput="calcCub();upd()">
+          </div>
+          <div class="field">
+            <label>Comprimento (cm)</label>
+            <input id="p-comp" type="number" placeholder="20" min="1" oninput="calcCub();upd()">
+          </div>
+          <div class="field">
+            <label>Valor Declarado (R$)</label>
+            <input id="p-valor" type="number" placeholder="0.00" step="0.01" min="0" oninput="upd()">
+          </div>
+          <div class="field">
+            <label>Conteúdo</label>
+            <input id="p-conteudo" type="text" placeholder="Ex: Eletrônico" oninput="upd()">
+          </div>
+          <div class="field full">
+            <label>Observações (FRÁGIL, URGENTE…)</label>
+            <textarea id="p-obs" rows="2" oninput="upd()"></textarea>
+          </div>
+          <div class="field">
+            <label>Serviço</label>
+            <select id="p-servico" onchange="upd()">
+              <option value="EXPRESS">EXPRESS</option>
+              <option value="ECONOMICO">ECONÔMICO</option>
+              <option value="CARGO">CARGO +</option>
+            </select>
+          </div>
+          <div class="field">
+            <label>Prazo estimado</label>
+            <input id="p-prazo" type="text" placeholder="3 dias úteis" oninput="upd()">
+          </div>
+        </div>
+        <div class="cubico" id="cubico">
+          <strong>📐 Peso Cubado (L×A×C ÷ 6.000)</strong>
+          <span id="cubico-txt"></span>
+        </div>
+      </div>
+
+      <div class="actions">
+        <button class="btn btn-p" onclick="gerar()">✅ Gerar Etiqueta</button>
+        <button class="btn btn-o" onclick="limpar()">🔄 Limpar</button>
+        <button class="btn btn-a" onclick="salvarRasc()">💾 Salvar Rascunho</button>
+      </div>
+    </div>
+
+    <!-- Preview -->
+    <div id="preview-col" style="position:sticky;top:70px;flex-shrink:0">
+      <div class="card" style="padding:1rem">
+        <div class="card-title">👁️ Preview</div>
+
+        <div class="formato-sel">
+          <button class="fmt-btn active" onclick="setFmt('normal',this)">A4 Padrão</button>
+          <button class="fmt-btn"        onclick="setFmt('termica',this)">Térmica</button>
+          <button class="fmt-btn"        onclick="setFmt('mini',this)">Mini</button>
+        </div>
+
+        <!-- ═══════════════════════════════
+             ETIQUETA DE TRANSPORTE PADRÃO
+             ═══════════════════════════════ -->
+        <div id="etiqueta">
+
+          <!-- 1. Cabeçalho transportadora -->
+          <div class="etq-topo">
+            <div>
+              <div class="etq-topo-marca" id="etq-marca">✈ AZUL CARGO</div>
+              <div class="etq-topo-sub"   id="etq-sub">Express Logística</div>
+            </div>
+            <img id="etq-logo-img" class="etq-topo-logo" src="" alt="">
+            <div class="etq-topo-servico" id="etq-servico-badge">EXPRESS</div>
+          </div>
+
+          <!-- 2. Barra serviço / prazo -->
+          <div class="etq-servico-bar">
+            <span>CÓDIGO DE SERVIÇO: <strong id="etq-cod-serv">AZE</strong></span>
+            <span class="prazo">⏱ <span id="etq-prazo">—</span></span>
+          </div>
+
+          <!-- 3. DESTINATÁRIO (grande, destaque) -->
+          <div class="etq-destinatario">
+            <div class="etq-bloco-label">▼ DESTINATÁRIO</div>
+            <div class="etq-dest-nome" id="etq-d-nome">—</div>
+            <div class="etq-dest-end"  id="etq-d-end">—</div>
+            <div class="etq-dest-cep"  id="etq-d-cep">CEP: —</div>
+            <div class="etq-dest-cidade" id="etq-d-cidade">—</div>
+          </div>
+
+          <!-- 4. Barra UF destino (destaque lateral) -->
+          <div class="etq-uf-bar">
+            <div class="etq-uf-box" id="etq-uf-box">—</div>
+            <div class="etq-uf-info">
+              <span>Município destino</span>
+              <strong id="etq-uf-cidade">—</strong>
+              <span style="margin-top:.15rem">Bairro: <strong id="etq-uf-bairro">—</strong></span>
+            </div>
+          </div>
+
+          <!-- 5. Dados do pacote (células) -->
+          <div class="etq-pacote">
+            <div class="etq-pcel">
+              <div class="label">Peso (kg)</div>
+              <div class="valor" id="etq-peso">—</div>
+            </div>
+            <div class="etq-pcel">
+              <div class="label">Dimensões (cm)</div>
+              <div class="valor" id="etq-dim">—</div>
+            </div>
+            <div class="etq-pcel">
+              <div class="label">Vlr. Declarado</div>
+              <div class="valor" id="etq-valor">—</div>
+            </div>
+          </div>
+
+          <!-- Conteúdo / obs (linha extra) -->
+          <div style="border-bottom:1.5px solid #000;padding:.3rem .75rem;display:flex;gap:1.5rem">
+            <div class="etq-pcel" style="border:none;padding:0">
+              <div class="label">Conteúdo</div>
+              <div class="valor" id="etq-conteudo" style="font-size:.75rem">—</div>
+            </div>
+            <div class="etq-pcel" style="border:none;padding:0">
+              <div class="label">Nota Fiscal / Obs</div>
+              <div class="valor" id="etq-obs-val" style="font-size:.75rem">—</div>
+            </div>
+          </div>
+
+          <!-- 6. Remetente (menor, fundo cinza) -->
+          <div class="etq-remetente">
+            <div class="etq-bloco-label">▲ REMETENTE</div>
+            <div class="etq-rem-nome" id="etq-r-nome">—</div>
+            <div class="etq-rem-end"  id="etq-r-end">—</div>
+          </div>
+
+          <!-- 7. Código de barras Code128 -->
+          <div class="etq-barcode">
+            <svg id="etq-barcode"></svg>
+            <div class="etq-codigo-texto" id="etq-codigo">—</div>
+          </div>
+
+          <!-- 8. Rodapé -->
+          <div class="etq-rodape">
+            <span id="etq-footer-l">Azul Cargo Express | azulcargo.com.br</span>
+            <span id="etq-obs-tag"></span>
+            <span id="etq-dt">—</span>
+          </div>
+
+        </div><!-- /etiqueta -->
+
+        <div style="display:flex;flex-wrap:wrap;gap:.5rem;margin-top:.85rem">
+          <button class="btn btn-p btn-sm" id="btn-imp" onclick="imprimir()" disabled>🖨️ Imprimir</button>
+          <button class="btn btn-g btn-sm" id="btn-pdf" onclick="baixarPDF()" disabled>⬇️ PDF</button>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- ══ LOTE / CSV ══ -->
+<div class="view" id="view-lote">
+  <div class="card">
+    <div class="card-title">📋 Importação em Lote</div>
+    <p style="font-size:.85rem;color:var(--g600);margin-bottom:.85rem">
+      Importe CSV ou Excel com múltiplos destinatários.
+      <a href="#" onclick="dlTemplate();return false" style="color:var(--azul);font-weight:700">⬇️ Baixar template</a>
+    </p>
+    <div class="drop-area" id="drop"
+         onclick="document.getElementById('file-in').click()"
+         ondragover="event.preventDefault();this.classList.add('drag')"
+         ondragleave="this.classList.remove('drag')"
+         ondrop="handleDrop(event)">
+      <div class="di">📂</div>
+      <p>Clique ou arraste o arquivo aqui</p>
+      <small>Aceito: .csv, .xlsx, .xls</small>
+    </div>
+    <input type="file" id="file-in" accept=".csv,.xlsx,.xls" onchange="handleFile(event)">
+
+    <div id="lote-res" style="display:none;margin-top:1.25rem">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:.75rem">
+        <span id="lote-count" style="font-weight:700;color:var(--g700)"></span>
+        <div style="display:flex;gap:.5rem">
+          <button class="btn btn-p btn-sm" onclick="processarLote()">🚀 Gerar Todas</button>
+          <button class="btn btn-o btn-sm" onclick="limparLote()">✖ Limpar</button>
+        </div>
+      </div>
+      <div id="lote-prog" style="display:none">
+        <div class="prog-wrap"><div class="prog-fill" id="lote-bar" style="width:0%"></div></div>
+        <p id="lote-prog-txt" style="font-size:.77rem;color:var(--g600);margin-top:.25rem"></p>
+      </div>
+      <div class="tbl-wrap">
+        <table>
+          <thead><tr><th>#</th><th>Destin
+
