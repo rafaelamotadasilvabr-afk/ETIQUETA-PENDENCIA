@@ -2,753 +2,192 @@
 <html lang="pt-BR">
 <head>
 <meta charset="UTF-8"/>
-<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-<title>Gerador de Etiquetas Azul Cargo</title>
-<script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.6/dist/JsBarcode.all.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
-
-<style>
-*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
-:root{
-  --azul:#1351B4;--azul-dark:#0c3d8a;--azul-light:#dce9f9;
-  --accent:#F5A623;--danger:#e53935;--success:#2e7d32;
-  --gray-50:#f8f9fa;--gray-100:#f1f3f5;--gray-200:#e9ecef;
-  --gray-300:#dee2e6;--gray-400:#adb5bd;--gray-600:#6c757d;
-  --gray-700:#495057;--gray-800:#343a40;
-  --radius:8px;--shadow:0 2px 12px rgba(0,0,0,.1)
-}
-body{font-family:'Segoe UI',system-ui,sans-serif;background:#f0f2f5;color:var(--gray-800);min-height:100vh}
-
-/* NAVBAR */
-.navbar{background:var(--azul);color:#fff;height:60px;padding:0 1.5rem;
-  display:flex;align-items:center;justify-content:space-between;
-  box-shadow:0 2px 8px rgba(0,0,0,.25);position:sticky;top:0;z-index:200}
-.brand{display:flex;align-items:center;gap:.6rem;font-weight:800;font-size:1.1rem;letter-spacing:.02em}
-.brand-sub{font-size:.65rem;font-weight:400;opacity:.75;display:block;letter-spacing:.06em}
-.nav-links{display:flex;gap:.15rem;list-style:none}
-.nav-links a{color:rgba(255,255,255,.82);text-decoration:none;padding:.45rem .9rem;
-  border-radius:6px;font-size:.82rem;font-weight:500;cursor:pointer;transition:.15s}
-.nav-links a:hover,.nav-links a.active{background:rgba(255,255,255,.2);color:#fff}
-
-/* LAYOUT */
-.page{display:none}.page.active{display:block}
-.wrap{max-width:1360px;margin:0 auto;padding:1.5rem}
-
-/* CARDS */
-.card{background:#fff;border-radius:var(--radius);box-shadow:var(--shadow);padding:1.5rem;margin-bottom:1.25rem}
-.card-title{font-size:.95rem;font-weight:700;color:var(--azul);border-bottom:2px solid var(--azul-light);
-  padding-bottom:.65rem;margin-bottom:1.25rem;display:flex;align-items:center;gap:.45rem}
-
-/* STATS */
-.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:1rem;margin-bottom:1.25rem}
-.stat{background:#fff;border-radius:var(--radius);box-shadow:var(--shadow);padding:1.1rem 1.25rem;
-  display:flex;align-items:center;gap:.9rem}
-.stat-icon{width:44px;height:44px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:1.3rem}
-.ic-blue{background:var(--azul-light)}.ic-orange{background:#fff3cd}.ic-green{background:#d4edda}.ic-purple{background:#e8d5f5}
-.stat-label{font-size:.72rem;color:var(--gray-400);margin-bottom:.15rem}
-.stat-val{font-size:1.5rem;font-weight:800;color:var(--azul)}
-
-/* FORM */
-.two-col{display:grid;grid-template-columns:1fr 440px;gap:1.25rem;align-items:start}
-.fg{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:.9rem}
-.fg .span2{grid-column:span 2}.fg .full{grid-column:1/-1}
-.field{display:flex;flex-direction:column;gap:.3rem}
-.field label{font-size:.72rem;font-weight:700;color:var(--gray-600);text-transform:uppercase;letter-spacing:.05em}
-.field label .req{color:var(--danger)}
-.field input,.field select,.field textarea{
-  border:1.5px solid var(--gray-200);border-radius:6px;padding:.55rem .8rem;
-  font-size:.875rem;color:var(--gray-800);background:var(--gray-50);
-  font-family:inherit;transition:.15s}
-.field input:focus,.field select:focus,.field textarea:focus{
-  outline:none;border-color:var(--azul);background:#fff;
-  box-shadow:0 0 0 3px rgba(19,81,180,.12)}
-.field input.ok{border-color:var(--success)}
-.field input.err{border-color:var(--danger)}
-.hint{font-size:.7rem;margin-top:-.1rem}
-.hint.ok{color:var(--success)}.hint.err{color:var(--danger)}.hint.info{color:var(--gray-400)}
-
-.cep-row{display:flex;gap:.4rem}
-.cep-row input{flex:1}
-.cep-btn{background:var(--azul);color:#fff;border:none;border-radius:6px;
-  padding:0 .85rem;cursor:pointer;font-size:.75rem;font-weight:700;white-space:nowrap;transition:.15s}
-.cep-btn:hover{background:var(--azul-dark)}
-
-/* BOTÕES */
-.btn{display:inline-flex;align-items:center;gap:.4rem;padding:.6rem 1.2rem;border-radius:6px;
-  font-size:.83rem;font-weight:700;cursor:pointer;border:none;transition:.15s;text-decoration:none}
-.btn-primary{background:var(--azul);color:#fff}.btn-primary:hover{background:var(--azul-dark)}
-.btn-success{background:var(--success);color:#fff}.btn-success:hover{background:#1b5e20}
-.btn-accent{background:var(--accent);color:#fff}.btn-accent:hover{background:#d4891a}
-.btn-outline{background:transparent;border:1.5px solid var(--azul);color:var(--azul)}
-.btn-outline:hover{background:var(--azul-light)}
-.btn-danger{background:var(--danger);color:#fff}.btn-danger:hover{background:#b71c1c}
-.btn-sm{padding:.38rem .8rem;font-size:.76rem}
-.btn:disabled{opacity:.5;cursor:not-allowed}
-.actions{display:flex;flex-wrap:wrap;gap:.65rem;margin-top:1.25rem}
-
-/* PESO CÚBICO */
-.cubico{background:#e8f4fd;border-left:4px solid var(--azul);border-radius:0 6px 6px 0;
-  padding:.7rem 1rem;font-size:.8rem;color:var(--azul-dark);margin-top:1rem;display:none}
-.cubico strong{display:block;font-size:.85rem;margin-bottom:.2rem}
-
-/* ════════════════════════════════════════
-   ETIQUETA — PADRÃO TRANSPORTE
-   Baseada no layout real de etiquetas de
-   transportadora (10cm × 15cm = 378×567px)
-════════════════════════════════════════ */
-.etq-wrap{position:sticky;top:76px}
-.etq-formato-btns{display:flex;gap:.4rem;margin-bottom:.85rem}
-.fmtbtn{padding:.35rem .8rem;border-radius:5px;border:1.5px solid var(--gray-200);
-  background:#fff;font-size:.76rem;cursor:pointer;transition:.15s}
-.fmtbtn.active{border-color:var(--azul);background:var(--azul-light);color:var(--azul);font-weight:700}
-
-/* A etiqueta em si — proporção 10×15cm */
-#etq{
-  width:378px;
-  font-family:'Arial',sans-serif;
-  border:2px solid #000;
-  background:#fff;
-  user-select:none;
-  box-shadow:var(--shadow);
-}
-
-/* CABEÇALHO AZUL */
-.etq-head{
-  background:var(--azul);
-  color:#fff;
-  display:flex;
-  align-items:center;
-  justify-content:space-between;
-  padding:6px 10px;
-  min-height:48px;
-}
-.etq-head-logo{display:flex;flex-direction:column}
-.etq-head-logo .name{font-size:14px;font-weight:900;letter-spacing:.06em;line-height:1}
-.etq-head-logo .sub{font-size:7px;opacity:.8;letter-spacing:.08em;margin-top:2px}
-.etq-head-right{text-align:right}
-.etq-head-right .tipo{font-size:9px;font-weight:700;background:rgba(255,255,255,.2);
-  padding:2px 6px;border-radius:3px;letter-spacing:.1em}
-.etq-head-right .data{font-size:7px;opacity:.75;margin-top:3px}
-.etq-head-logo img{max-height:36px;max-width:90px;object-fit:contain;display:none}
-
-/* SEPARADOR */
-.etq-line{border:none;border-top:2px solid #000;margin:0}
-.etq-line-dashed{border:none;border-top:1px dashed #888;margin:0}
-.etq-line-thin{border:none;border-top:1px solid #000;margin:0}
-
-/* SEÇÃO DESTINATÁRIO — zona maior, destaque visual */
-.etq-dest-zone{padding:7px 10px 6px}
-.etq-zone-label{
-  font-size:7px;font-weight:900;text-transform:uppercase;letter-spacing:.15em;
-  color:#fff;background:#000;display:inline-block;padding:1px 5px;margin-bottom:5px
-}
-.etq-dest-nome{font-size:14px;font-weight:900;line-height:1.2;text-transform:uppercase;margin-bottom:3px}
-.etq-dest-addr{font-size:9px;line-height:1.5;color:#111}
-.etq-dest-cep-bairro{display:flex;gap:10px;margin-top:3px}
-.etq-cep-box{
-  border:2px solid #000;padding:3px 7px;border-radius:3px;
-  font-size:11px;font-weight:900;letter-spacing:.08em
-}
-.etq-bairro-box{font-size:8.5px;font-weight:700;line-height:1.3;align-self:center}
-.etq-cidade-uf{font-size:11px;font-weight:900;text-transform:uppercase;margin-top:4px;letter-spacing:.03em}
-
-/* FAIXA REMETENTE */
-.etq-rem-zone{
-  background:#f5f5f5;border-top:1px solid #000;border-bottom:1px solid #000;
-  padding:5px 10px
-}
-.etq-rem-zone .etq-zone-label{background:var(--gray-700)}
-.etq-rem-nome{font-size:9px;font-weight:700;margin-bottom:1px}
-.etq-rem-addr{font-size:8px;color:#444;line-height:1.4}
-
-/* GRID DADOS DO PACOTE */
-.etq-pkg-zone{display:grid;grid-template-columns:1fr 1fr 1fr;border-top:1px solid #000}
-.etq-pkg-cell{padding:5px 8px;border-right:1px solid #000}
-.etq-pkg-cell:last-child{border-right:none}
-.etq-pkg-cell .pk-label{font-size:6.5px;font-weight:700;text-transform:uppercase;
-  letter-spacing:.08em;color:#666;margin-bottom:2px}
-.etq-pkg-cell .pk-val{font-size:10px;font-weight:900}
-
-/* CONTEÚDO + OBS */
-.etq-conteudo-zone{border-top:1px solid #000;padding:4px 10px;display:flex;gap:10px}
-.etq-conteudo-zone .ck-label{font-size:6.5px;font-weight:700;text-transform:uppercase;color:#666}
-.etq-conteudo-zone .ck-val{font-size:8.5px;font-weight:600}
-
-/* CÓDIGO DE BARRAS — zona central */
-.etq-barcode-zone{border-top:2px solid #000;padding:8px 10px 4px;text-align:center;background:#fff}
-.etq-barcode-zone svg{max-width:100%}
-.etq-tracking{font-size:9px;font-weight:700;letter-spacing:.15em;margin-top:2px;font-family:'Courier New',monospace}
-
-/* RODAPÉ */
-.etq-footer{
-  background:var(--azul);color:#fff;
-  font-size:6.5px;letter-spacing:.06em;
-  padding:4px 10px;display:flex;justify-content:space-between;align-items:center
-}
-
-/* ─── Ações preview ─── */
-.preview-actions{display:flex;gap:.5rem;flex-wrap:wrap;margin-top:.85rem}
-
-/* HISTÓRICO */
-.filters{display:flex;flex-wrap:wrap;gap:.65rem;margin-bottom:1rem;align-items:center}
-.filters input,.filters select{border:1.5px solid var(--gray-200);border-radius:6px;
-  padding:.48rem .8rem;font-size:.82rem;background:#fff}
-.filters input{min-width:200px}
-.tbl-wrap{overflow-x:auto}
-table{width:100%;border-collapse:collapse;font-size:.82rem}
-thead th{background:var(--gray-50);padding:.65rem .9rem;text-align:left;
-  font-size:.68rem;text-transform:uppercase;letter-spacing:.05em;
-  color:var(--gray-600);border-bottom:2px solid var(--gray-200);white-space:nowrap}
-tbody tr{border-bottom:1px solid var(--gray-100);transition:.12s}
-tbody tr:hover{background:var(--gray-50)}
-tbody td{padding:.65rem .9rem;color:var(--gray-700);vertical-align:middle}
-.badge{display:inline-block;padding:.2rem .55rem;border-radius:20px;font-size:.68rem;font-weight:700}
-.badge-blue{background:var(--azul-light);color:var(--azul)}
-.badge-green{background:#d4edda;color:#155724}
-
-/* LOTE */
-.upload-zone{border:2.5px dashed var(--gray-300);border-radius:var(--radius);
-  padding:2.5rem;text-align:center;cursor:pointer;transition:.15s;background:var(--gray-50)}
-.upload-zone:hover,.upload-zone.drag{border-color:var(--azul);background:var(--azul-light)}
-.upload-zone .up-icon{font-size:2.5rem;margin-bottom:.5rem}
-.upload-zone p{color:var(--gray-600);font-size:.88rem}
-.upload-zone small{color:var(--gray-400);font-size:.75rem}
-#file-inp{display:none}
-.prog-wrap{background:var(--gray-200);border-radius:20px;height:7px;overflow:hidden;margin:.4rem 0}
-.prog-fill{height:100%;background:var(--azul);border-radius:20px;transition:width .3s}
-
-/* TOAST */
-#toasts{position:fixed;bottom:1.5rem;right:1.5rem;display:flex;flex-direction:column;gap:.4rem;z-index:9999}
-.toast{background:#1a1a2e;color:#fff;padding:.65rem 1.1rem;border-radius:8px;font-size:.82rem;
-  box-shadow:0 4px 16px rgba(0,0,0,.2);display:flex;align-items:center;gap:.5rem;
-  animation:tIn .3s ease;max-width:300px}
-.toast.ok{background:var(--success)}.toast.err{background:var(--danger)}.toast.warn{background:var(--accent);color:#333}
-@keyframes tIn{from{opacity:0;transform:translateX(30px)}to{opacity:1;transform:translateX(0)}}
-
-/* MODAL */
-.overlay{position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:500;display:none;align-items:center;justify-content:center}
-.overlay.open{display:flex}
-.modal{background:#fff;border-radius:var(--radius);padding:1.75rem;max-width:420px;width:90%;box-shadow:0 20px 50px rgba(0,0,0,.2)}
-.modal h3{font-size:1rem;margin-bottom:.75rem;color:var(--azul)}
-.modal p{font-size:.85rem;color:var(--gray-600);line-height:1.55}
-.modal-btns{display:flex;gap:.6rem;margin-top:1.25rem;justify-content:flex-end}
-
-/* EMPTY */
-.empty{text-align:center;padding:2.5rem 1rem;color:var(--gray-400)}
-.empty .ei{font-size:2.8rem;margin-bottom:.5rem}
-.empty p{font-size:.85rem}
-
-/* CONFIG */
-.cfg-logo-prev{max-height:60px;max-width:150px;object-fit:contain;
-  border:1.5px solid var(--gray-200);border-radius:6px;padding:.4rem;margin-top:.5rem;display:none}
-
-/* PRINT */
-@media print{
-  body *{visibility:hidden}
-  #print-zone,#print-zone *{visibility:visible}
-  #print-zone{position:fixed;inset:0;display:flex;flex-wrap:wrap;
-    align-items:flex-start;justify-content:center;gap:0;padding:0}
-  #etq{box-shadow:none!important;border:1px solid #000}
-}
-
-@media(max-width:900px){
-  .two-col{grid-template-columns:1fr}
-  .etq-wrap{position:static}
-  #etq{width:100%;max-width:378px}
-  .nav-links{display:none}
-}
-</style>
-</head>
-<body>
-
-<!-- NAVBAR -->
-<nav class="navbar">
-  <div class="brand">
-    <span>✈</span>
-    <span>AZUL CARGO <span class="brand-sub">GERADOR DE ETIQUETAS PRO</span></span>
-  </div>
-  <ul class="nav-links">
-    <li><a onclick="nav('dashboard')" id="nt-dashboard" class="active">Dashboard</a></li>
-    <li><a onclick="nav('nova')"      id="nt-nova">Nova Etiqueta</a></li>
-    <li><a onclick="nav('lote')"      id="nt-lote">Lote / CSV</a></li>
-    <li><a onclick="nav('hist')"      id="nt-hist">Histórico</a></li>
-    <li><a onclick="nav('cfg')"       id="nt-cfg">Configurações</a></li>
-  </ul>
-</nav>
-
-<!-- TOASTS -->
-<div id="toasts"></div>
-
-<!-- MODAL DELETE -->
-<div class="overlay" id="modal-del">
-  <div class="modal">
-    <h3>🗑️ Confirmar exclusão</h3>
-    <p>Esta etiqueta será removida permanentemente do histórico. Deseja continuar?</p>
-    <div class="modal-btns">
-      <button class="btn btn-outline" onclick="closeModal()">Cancelar</button>
-      <button class="btn btn-danger"  onclick="confirmDel()">Excluir</button>
-    </div>
-  </div>
-</div>
-
-<div class="wrap">
-
-<!-- ══════════════════════════════════════
-     DASHBOARD
-══════════════════════════════════════ -->
-<div class="page active" id="page-dashboard">
-  <div class="stats">
-    <div class="stat"><div class="stat-icon ic-blue">📦</div><div><div class="stat-label">Hoje</div><div class="stat-val" id="st-hoje">0</div></div></div>
-    <div class="stat"><div class="stat-icon ic-orange">📅</div><div><div class="stat-label">Este Mês</div><div class="stat-val" id="st-mes">0</div></div></div>
-    <div class="stat"><div class="stat-icon ic-green">✅</div><div><div class="stat-label">Total</div><div class="stat-val" id="st-total">0</div></div></div>
-    <div class="stat"><div class="stat-icon ic-purple">⏱</div><div><div class="stat-label">Min. Economizados</div><div class="stat-val" id="st-tempo">0</div></div></div>
-  </div>
-
-  <div class="card">
-    <div class="card-title">🚀 Ações Rápidas</div>
-    <div style="display:flex;flex-wrap:wrap;gap:.65rem">
-      <button class="btn btn-primary" onclick="nav('nova')">➕ Nova Etiqueta</button>
-      <button class="btn btn-accent"  onclick="nav('lote')">📋 Importar Lote</button>
-      <button class="btn btn-outline" onclick="nav('hist')">🕓 Histórico</button>
-    </div>
-  </div>
-
-  <div class="card">
-    <div class="card-title">📋 Últimas Etiquetas</div>
-    <div class="tbl-wrap">
-      <table><thead><tr><th>Código</th><th>Destinatário</th><th>Cidade/UF</th><th>Peso</th><th>Data</th><th></th></tr></thead>
-      <tbody id="dash-tb"></tbody></table>
-      <div class="empty" id="dash-empty"><div class="ei">📭</div><p>Nenhuma etiqueta gerada ainda</p></div>
-    </div>
-  </div>
-</div>
-
-<!-- ══════════════════════════════════════
-     NOVA ETIQUETA
-══════════════════════════════════════ -->
-<div class="page" id="page-nova">
-  <div class="two-col">
-
-    <!-- FORMULÁRIO -->
-    <div>
-      <!-- REMETENTE -->
-      <div class="card">
-        <div class="card-title">📤 Remetente</div>
-        <div class="fg">
-          <div class="field full">
-            <label>Nome / Razão Social <span class="req">*</span></label>
-            <input id="rn" type="text" placeholder="Empresa ou nome completo" oninput="upd()">
-          </div>
-          <div class="field span2">
-            <label>CPF / CNPJ</label>
-            <input id="rd" type="text" placeholder="CPF ou CNPJ" oninput="maskDoc(this);upd()">
-            <span class="hint" id="rd-h"></span>
-          </div>
-          <div class="field">
-            <label>CEP <span class="req">*</span></label>
-            <div class="cep-row">
-              <input id="rc" type="text" maxlength="9" placeholder="00000-000" oninput="maskCep(this)" onkeyup="if(rawVal(this).length===8)cep('r')">
-              <button class="cep-btn" onclick="cep('r')">Buscar</button>
-            </div>
-            <span class="hint" id="rc-h"></span>
-          </div>
-          <div class="field">
-            <label>Número <span class="req">*</span></label>
-            <input id="rnum" type="text" placeholder="Nº" oninput="upd()">
-          </div>
-          <div class="field span2">
-            <label>Logradouro</label>
-            <input id="re" type="text" placeholder="Rua, Avenida..." oninput="upd()">
-          </div>
-          <div class="field">
-            <label>Complemento</label>
-            <input id="rco" type="text" placeholder="Apto, Sala..." oninput="upd()">
-          </div>
-          <div class="field">
-            <label>Bairro</label>
-            <input id="rb" type="text" oninput="upd()">
-          </div>
-          <div class="field">
-            <label>Cidade</label>
-            <input id="rci" type="text" oninput="upd()">
-          </div>
-          <div class="field">
-            <label>UF</label>
-            <select id="ruf" onchange="upd()"><option value="">--</option>
-              <option>AC</option><option>AL</option><option>AP</option><option>AM</option><option>BA</option>
-              <option>CE</option><option>DF</option><option>ES</option><option>GO</option><option>MA</option>
-              <option>MT</option><option>MS</option><option>MG</option><option>PA</option><option>PB</option>
-              <option>PR</option><option>PE</option><option>PI</option><option>RJ</option><option>RN</option>
-              <option>RS</option><option>RO</option><option>RR</option><option>SC</option><option selected>SP</option>
-              <option>SE</option><option>TO</option>
-            </select>
-          </div>
-        </div>
-      </div>
-
-      <!-- DESTINATÁRIO -->
-      <div class="card">
-        <div class="card-title">📥 Destinatário</div>
-        <div class="fg">
-          <div class="field full">
-            <label>Nome / Razão Social <span class="req">*</span></label>
-            <input id="dn" type="text" placeholder="Nome completo do destinatário" oninputDeixa eu acessar novamente para entender melhor o padrão visual atual e construir corretamente.
-
-<tool_call>
-{"name": "web_fetch", "arguments": {"url": "https://etiquetassa-hwhtebyd.manus.space/"}}
-</tool_call>
-<tool_response>
-{"content": "# Gerador de Etiquetas Azul Cargo\n\n[Dashboard](#) [Nova Etiqueta](#) [Histórico](#) [Configurações](#)\n\nBem-vindo ao Sistema\n\n# Gerador de Etiquetas Azul Cargo\n\nCrie etiquetas profissionais para seus envios com a Azul Cargo de forma rápida e eficiente\n\n[Criar Nova Etiqueta Nova Etiqueta](#) [Ver Histórico Histórico](#)\n\n## Estatísticas\n\n### Etiquetas Hoje\n\n0\n\n### Este Mês\n\n0\n\n### Total Geral\n\n0\n\n### Economia de Tempo\n\n0h\n\n## Funcionalidades\n\n### Geração Rápida\n\nCrie etiquetas em segundos com interface intuitiva\n\n### Código de Barras\n\nGeração automática de códigos de barras válidos\n\n### Impressão Otimizada\n\nLayout perfeito para impressão em papel A4 ou térmica\n\n### Histórico Completo\n\nAcompanhe todas as etiquetas geradas\n\n## Criar Nova Etiqueta\n\n### Dados do Remetente\n\nNome Completo ou Razão Social\n\nCEP\n\nBuscar\n\nEndereço\n\nNúmero\n\nComplemento\n\nBairro\n\nCidade\n\nEstado\n\n### Dados do Destinatário\n\nNome Completo ou Razão Social\n\nCEP\n\nBuscar\n\nEndereço\n\nNúmero\n\nComplemento\n\nBairro\n\nCidade\n\nEstado\n\n### Dados do Pacote\n\nPeso (kg)\n\nAltura (cm)\n\nLargura (cm)\n\nComprimento (cm)\n\nValor Declarado (R$)\n\nConteúdo\n\nObservações\n\n### Preview da Etiqueta\n\n#### AZUL CARGO\n\n#### REMETENTE\n\n#### DESTINATÁRIO\n\n#### DADOS DO PACOTE\n\nPeso: -\n\nDimensões: - x - x - cm\n\nValor Dec.: R$ -\n\nConteúdo: -\n\n#### CÓDIGO DE ENVIO\n\n#### [object Object]\n\n#### Data: 22/06/2026\n\n---\n\nAzul Cargo Express | www.azulcargo.com.br\n\n[Imprimir Etiqueta Imprimir](#) [Nova Etiqueta Nova Etiqueta](#)", "status": 200}]
-</tool_response>
-
-Entendido. Vou construir com o layout **exato de etiqueta de transporte** — o padrão usado por transportadoras como Azul Cargo, Correios e similares: destinatário em destaque no topo em fonte grande, remetente menor abaixo, código de barras Code128 no rodapé, divisões com bordas rígidas. Tudo em um único arquivo HTML funcional e pronto para uso.
-
-```html
-<!DOCTYPE html>
-<html lang="pt-BR">
-<head>
-<meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
 <title>Gerador de Etiquetas – Azul Cargo</title>
 <script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.6/dist/JsBarcode.all.min.js"></script>
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 :root{
-  --azul:#0055A5;--azul-dark:#003d7a;--azul-light:#ddeeff;
-  --accent:#FF6B00;--ok:#16a34a;--danger:#dc2626;--warn:#d97706;
+  --azul:#0055A5;--azul-dk:#003d7a;--azul-lt:#ddeeff;
+  --ok:#16a34a;--err:#dc2626;--warn:#d97706;--acc:#FF6B00;
   --g50:#f9fafb;--g100:#f3f4f6;--g200:#e5e7eb;--g300:#d1d5db;
   --g400:#9ca3af;--g600:#4b5563;--g700:#374151;--g800:#1f2937;
-  --r:8px;--sh:0 2px 12px rgba(0,0,0,.08);
 }
 body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--g100);color:var(--g800);min-height:100vh}
-
-/* ── NAVBAR ── */
-.nav{background:var(--azul);height:60px;display:flex;align-items:center;
-     justify-content:space-between;padding:0 1.5rem;
-     box-shadow:0 2px 10px rgba(0,0,0,.25);position:sticky;top:0;z-index:200}
-.nav-brand{color:#fff;font-size:1.1rem;font-weight:800;display:flex;align-items:center;gap:.6rem;letter-spacing:.04em}
-.nav-links{display:flex;gap:.15rem}
-.nav-links button{background:none;border:none;color:rgba(255,255,255,.8);
-  padding:.45rem .9rem;border-radius:6px;cursor:pointer;font-size:.82rem;
-  font-weight:600;transition:.15s}
+.nav{background:var(--azul);height:58px;display:flex;align-items:center;justify-content:space-between;padding:0 1.5rem;box-shadow:0 2px 8px rgba(0,0,0,.25);position:sticky;top:0;z-index:200}
+.nav-brand{color:#fff;font-size:1.05rem;font-weight:800;letter-spacing:.04em}
+.nav-brand small{font-weight:400;opacity:.7;font-size:.65rem;margin-left:.4rem}
+.nav-links{display:flex;gap:.1rem}
+.nav-links button{background:none;border:none;color:rgba(255,255,255,.8);padding:.42rem .85rem;border-radius:6px;cursor:pointer;font-size:.8rem;font-weight:600;transition:.15s;font-family:inherit}
 .nav-links button:hover,.nav-links button.active{background:rgba(255,255,255,.18);color:#fff}
-
-/* ── LAYOUT ── */
-.wrap{max-width:1380px;margin:0 auto;padding:1.5rem}
+.wrap{max-width:1360px;margin:0 auto;padding:1.4rem}
 .view{display:none}.view.active{display:block}
-
-/* ── STATS ── */
-.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:1rem;margin-bottom:1.5rem}
-.stat{background:#fff;border-radius:var(--r);padding:1.1rem 1.25rem;
-      box-shadow:var(--sh);display:flex;align-items:center;gap:.9rem}
-.stat-ico{width:44px;height:44px;border-radius:10px;display:flex;
-          align-items:center;justify-content:center;font-size:1.3rem;flex-shrink:0}
-.ic-b{background:#ddeeff}.ic-o{background:#fff3e0}.ic-g{background:#dcfce7}.ic-p{background:#f3e8ff}
-.stat-info p{font-size:.7rem;color:var(--g400);margin-bottom:.15rem}
-.stat-info h3{font-size:1.5rem;font-weight:700;color:var(--azul)}
-
-/* ── CARD ── */
-.card{background:#fff;border-radius:var(--r);box-shadow:var(--sh);padding:1.25rem;margin-bottom:1.25rem}
-.card-title{font-size:.95rem;font-weight:700;color:var(--azul);
-            margin-bottom:1rem;padding-bottom:.6rem;
-            border-bottom:2px solid var(--azul-light);display:flex;align-items:center;gap:.4rem}
-
-/* ── FORM ── */
-.fg{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:.85rem}
-.fg .full{grid-column:1/-1}.fg .span2{grid-column:span 2}
-.field{display:flex;flex-direction:column;gap:.3rem}
-.field label{font-size:.72rem;font-weight:700;color:var(--g600);text-transform:uppercase;letter-spacing:.04em}
-.field label .req{color:var(--danger)}
-.field input,.field select,.field textarea{
-  border:1.5px solid var(--g200);border-radius:6px;
-  padding:.55rem .8rem;font-size:.88rem;color:var(--g800);
-  background:var(--g50);transition:.15s;font-family:inherit;width:100%}
-.field input:focus,.field select:focus,.field textarea:focus{
-  outline:none;border-color:var(--azul);background:#fff;
-  box-shadow:0 0 0 3px rgba(0,85,165,.1)}
-.field input.err{border-color:var(--danger)}
-.field input.ok {border-color:var(--ok)}
-.fmsg{font-size:.7rem;margin-top:-.05rem}
-.fmsg.err{color:var(--danger)}.fmsg.ok{color:var(--ok)}
-
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(155px,1fr));gap:.9rem;margin-bottom:1.4rem}
+.stat{background:#fff;border-radius:8px;padding:1rem 1.1rem;box-shadow:0 2px 8px rgba(0,0,0,.07);display:flex;align-items:center;gap:.8rem}
+.stat-ic{width:42px;height:42px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:1.25rem;flex-shrink:0}
+.ib{background:#ddeeff}.io{background:#fff3e0}.ig{background:#dcfce7}.ip{background:#f3e8ff}
+.stat p{font-size:.68rem;color:var(--g400);margin-bottom:.1rem}
+.stat h3{font-size:1.45rem;font-weight:700;color:var(--azul)}
+.card{background:#fff;border-radius:8px;box-shadow:0 2px 8px rgba(0,0,0,.07);padding:1.2rem;margin-bottom:1.2rem}
+.card-title{font-size:.9rem;font-weight:700;color:var(--azul);margin-bottom:.9rem;padding-bottom:.55rem;border-bottom:2px solid var(--azul-lt);display:flex;align-items:center;gap:.4rem}
+.fg{display:grid;grid-template-columns:repeat(auto-fill,minmax(190px,1fr));gap:.75rem}
+.fg .full{grid-column:1/-1}.fg .s2{grid-column:span 2}
+.field{display:flex;flex-direction:column;gap:.28rem}
+.field label{font-size:.7rem;font-weight:700;color:var(--g600);text-transform:uppercase;letter-spacing:.04em}
+.req{color:var(--err)}
+.field input,.field select,.field textarea{border:1.5px solid var(--g200);border-radius:6px;padding:.52rem .75rem;font-size:.87rem;color:var(--g800);background:var(--g50);transition:.15s;font-family:inherit;width:100%}
+.field input:focus,.field select:focus,.field textarea:focus{outline:none;border-color:var(--azul);background:#fff;box-shadow:0 0 0 3px rgba(0,85,165,.1)}
+.fmsg{font-size:.68rem}.fmsg.err{color:var(--err)}.fmsg.ok{color:var(--ok)}
 .cep-row{display:flex;gap:.4rem}
 .cep-row input{flex:1}
-.cep-btn{flex-shrink:0;background:var(--azul);color:#fff;border:none;
-         border-radius:6px;padding:0 .9rem;cursor:pointer;font-size:.78rem;
-         font-weight:700;transition:.15s;white-space:nowrap}
-.cep-btn:hover{background:var(--azul-dark)}
+.cep-btn{background:var(--azul);color:#fff;border:none;border-radius:6px;padding:0 .85rem;cursor:pointer;font-size:.76rem;font-weight:700;transition:.15s;white-space:nowrap;font-family:inherit}
+.cep-btn:hover{background:var(--azul-dk)}
+.btn{display:inline-flex;align-items:center;gap:.4rem;padding:.58rem 1.1rem;border-radius:6px;font-size:.81rem;font-weight:700;cursor:pointer;border:none;transition:.15s;font-family:inherit}
+.bp{background:var(--azul);color:#fff}.bp:hover{background:var(--azul-dk)}
+.ba{background:var(--acc);color:#fff}.ba:hover{background:#d95d00}
+.bo{background:transparent;color:var(--azul);border:1.5px solid var(--azul)}.bo:hover{background:var(--azul-lt)}
+.bg{background:var(--ok);color:#fff}.bg:hover{background:#15803d}
+.bd{background:var(--err);color:#fff}.bd:hover{background:#b91c1c}
+.bsm{padding:.35rem .75rem;font-size:.74rem}
+.btn:disabled{opacity:.45;cursor:not-allowed}
+.actions{display:flex;flex-wrap:wrap;gap:.6rem;margin-top:1.1rem}
+.cubico{background:var(--azul-lt);border-left:4px solid var(--azul);border-radius:0 6px 6px 0;padding:.6rem .85rem;font-size:.79rem;color:var(--azul-dk);margin-top:.8rem;display:none}
+.cubico strong{display:block;margin-bottom:.12rem}
+.fmt-sel{display:flex;gap:.4rem;margin-bottom:.75rem}
+.fmt-btn{padding:.32rem .75rem;border-radius:5px;border:1.5px solid var(--g200);background:#fff;font-size:.76rem;cursor:pointer;transition:.15s;font-weight:600}
+.fmt-btn.active{border-color:var(--azul);background:var(--azul-lt);color:var(--azul)}
 
-/* ── BOTÕES ── */
-.btn{display:inline-flex;align-items:center;gap:.4rem;padding:.6rem 1.2rem;
-     border-radius:6px;font-size:.82rem;font-weight:700;cursor:pointer;
-     border:none;transition:.15s;text-decoration:none;font-family:inherit}
-.btn-p{background:var(--azul);color:#fff}.btn-p:hover{background:var(--azul-dark)}
-.btn-a{background:var(--accent);color:#fff}.btn-a:hover{background:#d95d00}
-.btn-o{background:transparent;color:var(--azul);border:1.5px solid var(--azul)}.btn-o:hover{background:var(--azul-light)}
-.btn-g{background:var(--ok);color:#fff}.btn-g:hover{background:#15803d}
-.btn-d{background:var(--danger);color:#fff}.btn-d:hover{background:#b91c1c}
-.btn-sm{padding:.38rem .8rem;font-size:.76rem}
-.btn:disabled{opacity:.5;cursor:not-allowed}
-.actions{display:flex;flex-wrap:wrap;gap:.65rem;margin-top:1.25rem}
-
-/* ── INFO CÚBICO ── */
-.cubico{background:var(--azul-light);border-left:4px solid var(--azul);
-        border-radius:0 6px 6px 0;padding:.65rem .9rem;font-size:.8rem;
-        color:var(--azul-dark);margin-top:.85rem;display:none}
-.cubico strong{display:block;margin-bottom:.15rem;font-size:.85rem}
-
-/* ════════════════════════════════════════════
-   ETIQUETA DE TRANSPORTE — PADRÃO REAL
-   Baseada no layout de transportadoras BR
-   ════════════════════════════════════════════ */
-.etiqueta-wrapper{
-  display:flex;flex-direction:column;align-items:flex-start;gap:1rem
-}
-.formato-sel{display:flex;gap:.4rem;margin-bottom:.5rem}
-.fmt-btn{padding:.35rem .8rem;border-radius:5px;border:1.5px solid var(--g200);
-         background:#fff;font-size:.78rem;cursor:pointer;transition:.15s;font-weight:600}
-.fmt-btn.active{border-color:var(--azul);background:var(--azul-light);color:var(--azul)}
-
-/* A etiqueta propriamente dita */
-#etiqueta{
-  width:400px;
-  border:2px solid #000;
-  font-family:'Courier New',Courier,monospace; /* monospace = visual transportadora */
-  background:#fff;
-  page-break-inside:avoid;
-}
-
-/* Cabeçalho da transportadora */
-.etq-topo{
-  background:var(--azul);
-  display:flex;align-items:center;justify-content:space-between;
-  padding:.5rem .75rem;border-bottom:2px solid #000
-}
-.etq-topo-marca{color:#fff;font-size:1rem;font-weight:900;letter-spacing:.12em;font-family:'Segoe UI',sans-serif}
-.etq-topo-sub{color:rgba(255,255,255,.75);font-size:.58rem;font-family:'Segoe UI',sans-serif}
-.etq-topo-logo{max-height:34px;max-width:90px;object-fit:contain;display:none}
-.etq-topo-servico{
-  background:#fff;color:var(--azul);
-  font-size:.65rem;font-weight:900;
-  padding:.2rem .5rem;border-radius:3px;
-  letter-spacing:.05em;text-align:center;font-family:'Segoe UI',sans-serif
-}
-
-/* Linha de código de serviço / prazo */
-.etq-servico-bar{
-  border-bottom:1.5px solid #000;
-  padding:.35rem .75rem;
-  display:flex;justify-content:space-between;align-items:center;
-  background:var(--g50)
-}
-.etq-servico-bar span{font-size:.68rem;font-weight:700;color:var(--g700);font-family:'Segoe UI',sans-serif}
-.etq-servico-bar .prazo{font-size:.75rem;font-weight:900;color:var(--azul);font-family:'Segoe UI',sans-serif}
-
-/* Bloco destinatário — DESTAQUE (maior, topo da etiqueta) */
-.etq-destinatario{
-  border-bottom:2px solid #000;
-  padding:.55rem .75rem;
-}
-.etq-bloco-label{
-  font-size:.6rem;font-weight:900;letter-spacing:.12em;
-  text-transform:uppercase;color:var(--g600);
-  margin-bottom:.25rem;font-family:'Segoe UI',sans-serif
-}
-.etq-dest-nome{font-size:1.05rem;font-weight:900;line-height:1.2;color:#000;font-family:'Segoe UI',sans-serif}
-.etq-dest-end {font-size:.78rem;font-weight:700;color:#000;margin-top:.2rem;line-height:1.45;font-family:'Segoe UI',sans-serif}
-.etq-dest-cep {
-  font-size:1rem;font-weight:900;color:#000;
-  margin-top:.3rem;letter-spacing:.08em;font-family:'Courier New',monospace
-}
-.etq-dest-cidade{font-size:.78rem;font-weight:700;color:#000;font-family:'Segoe UI',sans-serif}
-
-/* Linha divisória horizontal com célula UF */
-.etq-uf-bar{
-  border-bottom:2px solid #000;border-top:1.5px solid #000;
-  display:flex;align-items:stretch
-}
-.etq-uf-box{
-  background:var(--azul);color:#fff;
-  font-size:1.4rem;font-weight:900;letter-spacing:.05em;
-  padding:.3rem .75rem;border-right:2px solid #000;
-  display:flex;align-items:center;justify-content:center;
-  min-width:60px;font-family:'Segoe UI',sans-serif
-}
-.etq-uf-info{padding:.3rem .6rem;display:flex;flex-direction:column;justify-content:center;gap:.1rem}
-.etq-uf-info span{font-size:.65rem;color:var(--g600);font-family:'Segoe UI',sans-serif}
-.etq-uf-info strong{font-size:.78rem;color:#000;font-family:'Segoe UI',sans-serif}
-
-/* Dados do pacote — linha horizontal com células */
-.etq-pacote{
-  border-bottom:1.5px solid #000;
-  display:grid;grid-template-columns:1fr 1fr 1fr;
-}
-.etq-pcel{
-  padding:.35rem .6rem;border-right:1.5px solid #000;
-}
-.etq-pcel:last-child{border-right:none}
-.etq-pcel .label{font-size:.58rem;font-weight:700;color:var(--g600);text-transform:uppercase;font-family:'Segoe UI',sans-serif}
-.etq-pcel .valor{font-size:.82rem;font-weight:900;color:#000;font-family:'Courier New',monospace}
-
-/* Remetente — menor, abaixo do pacote */
-.etq-remetente{
-  border-bottom:1.5px solid #000;
-  padding:.4rem .75rem;
-  background:var(--g50)
-}
-.etq-rem-nome{font-size:.75rem;font-weight:700;color:#000;font-family:'Segoe UI',sans-serif}
-.etq-rem-end {font-size:.67rem;color:var(--g600);line-height:1.4;font-family:'Segoe UI',sans-serif}
-
-/* Código de barras — rodapé */
-.etq-barcode{
-  padding:.5rem .75rem .4rem;
-  text-align:center;border-bottom:1.5px solid #000
-}
-.etq-barcode svg{width:100%;max-height:52px}
-.etq-codigo-texto{font-size:.62rem;letter-spacing:.12em;color:#000;
-                  margin-top:.15rem;font-family:'Courier New',monospace;font-weight:700}
-
-/* Rodapé da etiqueta */
-.etq-rodape{
-  padding:.3rem .75rem;
-  display:flex;justify-content:space-between;align-items:center
-}
-.etq-rodape span{font-size:.6rem;color:var(--g600);font-family:'Segoe UI',sans-serif}
-.etq-rodape .obs-tag{
-  background:var(--warn);color:#fff;font-size:.58rem;font-weight:900;
-  padding:.1rem .4rem;border-radius:3px;font-family:'Segoe UI',sans-serif
-}
-
-/* Formato térmico: mais estreito */
+/* ETIQUETA */
+#etiqueta{width:400px;border:2.5px solid #000;font-family:'Courier New',Courier,monospace;background:#fff}
 #etiqueta.termica{width:320px}
-#etiqueta.mini   {width:280px}
+#etiqueta.mini{width:270px}
+.etq-head{background:var(--azul);display:flex;align-items:center;justify-content:space-between;padding:.5rem .75rem;border-bottom:2.5px solid #000}
+.etq-marca{color:#fff;font-size:1rem;font-weight:900;letter-spacing:.1em;font-family:'Segoe UI',sans-serif}
+.etq-sub{color:rgba(255,255,255,.72);font-size:.56rem;font-family:'Segoe UI',sans-serif}
+.etq-logo-img{max-height:32px;max-width:85px;object-fit:contain;display:none}
+.etq-srv-badge{background:#fff;color:var(--azul);font-size:.62rem;font-weight:900;padding:.18rem .45rem;border-radius:3px;letter-spacing:.04em;font-family:'Segoe UI',sans-serif}
+.etq-srv-bar{border-bottom:1.5px solid #000;padding:.3rem .75rem;display:flex;justify-content:space-between;align-items:center;background:var(--g50)}
+.etq-srv-bar span{font-size:.65rem;font-weight:700;color:var(--g700);font-family:'Segoe UI',sans-serif}
+.etq-srv-bar .prazo{font-size:.72rem;font-weight:900;color:var(--azul);font-family:'Segoe UI',sans-serif}
+.etq-dest{border-bottom:2.5px solid #000;padding:.55rem .75rem}
+.blk-label{font-size:.58rem;font-weight:900;letter-spacing:.12em;text-transform:uppercase;color:var(--g600);margin-bottom:.22rem;font-family:'Segoe UI',sans-serif}
+.etq-d-nome{font-size:1.05rem;font-weight:900;color:#000;line-height:1.2;font-family:'Segoe UI',sans-serif}
+.etq-d-end{font-size:.77rem;font-weight:700;color:#000;margin-top:.18rem;line-height:1.4;font-family:'Segoe UI',sans-serif}
+.etq-d-cep{font-size:.98rem;font-weight:900;color:#000;margin-top:.28rem;letter-spacing:.07em;font-family:'Courier New',monospace}
+.etq-d-cidade{font-size:.76rem;font-weight:700;color:#000;font-family:'Segoe UI',sans-serif}
+.etq-uf-bar{border-bottom:2px solid #000;display:flex;align-items:stretch}
+.etq-uf-box{background:var(--azul);color:#fff;font-size:1.5rem;font-weight:900;padding:.3rem .7rem;border-right:2px solid #000;display:flex;align-items:center;justify-content:center;min-width:62px;font-family:'Segoe UI',sans-serif}
+.etq-uf-info{padding:.3rem .6rem;display:flex;flex-direction:column;justify-content:center;gap:.08rem}
+.etq-uf-info span{font-size:.6rem;color:var(--g600);font-family:'Segoe UI',sans-serif}
+.etq-uf-info strong{font-size:.76rem;color:#000;font-family:'Segoe UI',sans-serif}
+.etq-pkg{border-bottom:1.5px solid #000;display:grid;grid-template-columns:1fr 1fr 1fr}
+.etq-pc{padding:.32rem .6rem;border-right:1.5px solid #000}
+.etq-pc:last-child{border-right:none}
+.etq-pc .lbl{font-size:.56rem;font-weight:700;color:var(--g600);text-transform:uppercase;font-family:'Segoe UI',sans-serif}
+.etq-pc .val{font-size:.8rem;font-weight:900;color:#000;font-family:'Courier New',monospace}
+.etq-extra{border-bottom:1.5px solid #000;padding:.3rem .75rem;display:flex;gap:1.5rem}
+.etq-rem{border-bottom:1.5px solid #000;padding:.4rem .75rem;background:var(--g50)}
+.etq-r-nome{font-size:.74rem;font-weight:700;color:#000;font-family:'Segoe UI',sans-serif}
+.etq-r-end{font-size:.65rem;color:var(--g600);line-height:1.4;font-family:'Segoe UI',sans-serif}
+.etq-barcode{padding:.45rem .75rem .35rem;text-align:center;border-bottom:1.5px solid #000}
+.etq-barcode svg{width:100%;max-height:54px}
+.etq-cod-txt{font-size:.6rem;letter-spacing:.1em;color:#000;margin-top:.12rem;font-family:'Courier New',monospace;font-weight:700}
+.etq-footer{padding:.28rem .75rem;display:flex;justify-content:space-between;align-items:center}
+.etq-footer span{font-size:.58rem;color:var(--g600);font-family:'Segoe UI',sans-serif}
+.etq-obs-tag{background:var(--warn);color:#fff;font-size:.56rem;font-weight:900;padding:.08rem .38rem;border-radius:3px;font-family:'Segoe UI',sans-serif}
 
-/* ── HISTÓRICO ── */
-.filters{display:flex;flex-wrap:wrap;gap:.65rem;align-items:center;margin-bottom:1rem}
-.filters input,.filters select{border:1.5px solid var(--g200);border-radius:6px;
-  padding:.45rem .75rem;font-size:.82rem;background:#fff}
-.filters input{min-width:200px}
 .tbl-wrap{overflow-x:auto}
-table{width:100%;border-collapse:collapse;font-size:.82rem}
-thead th{background:var(--g50);padding:.65rem .85rem;text-align:left;
-  font-size:.68rem;text-transform:uppercase;letter-spacing:.04em;
-  color:var(--g600);border-bottom:2px solid var(--g200);white-space:nowrap}
+table{width:100%;border-collapse:collapse;font-size:.81rem}
+thead th{background:var(--g50);padding:.6rem .8rem;text-align:left;font-size:.66rem;text-transform:uppercase;letter-spacing:.04em;color:var(--g600);border-bottom:2px solid var(--g200);white-space:nowrap}
 tbody tr{border-bottom:1px solid var(--g100);transition:.12s}
 tbody tr:hover{background:var(--g50)}
-tbody td{padding:.65rem .85rem;color:var(--g700)}
-.badge{display:inline-block;padding:.2rem .6rem;border-radius:20px;font-size:.67rem;font-weight:700}
-.badge-b{background:var(--azul-light);color:var(--azul)}
-.badge-g{background:#dcfce7;color:#15803d}
+tbody td{padding:.62rem .8rem;color:var(--g700)}
+.badge{display:inline-block;padding:.18rem .55rem;border-radius:20px;font-size:.65rem;font-weight:700}
+.bb{background:var(--azul-lt);color:var(--azul)}
+.bg2{background:#dcfce7;color:#15803d}
+.bo2{background:#fff3e0;color:#92400e}
 .empty{text-align:center;padding:2.5rem;color:var(--g400)}
-.empty .ei{font-size:2.5rem;margin-bottom:.5rem}
-
-/* ── UPLOAD LOTE ── */
-.drop-area{border:2px dashed var(--g300);border-radius:var(--r);
-  padding:2.2rem;text-align:center;cursor:pointer;transition:.15s;background:var(--g50)}
-.drop-area:hover,.drop-area.drag{border-color:var(--azul);background:var(--azul-light)}
-.drop-area .di{font-size:2.2rem;margin-bottom:.4rem}
-.drop-area p{color:var(--g600);font-size:.87rem}
-.drop-area small{color:var(--g400);font-size:.75rem}
+.empty .ei{font-size:2.5rem;margin-bottom:.4rem}
+.filters{display:flex;flex-wrap:wrap;gap:.6rem;align-items:center;margin-bottom:.9rem}
+.filters input,.filters select{border:1.5px solid var(--g200);border-radius:6px;padding:.42rem .72rem;font-size:.81rem;background:#fff;font-family:inherit}
+.filters input{min-width:190px}
+.drop{border:2px dashed var(--g300);border-radius:8px;padding:2rem;text-align:center;cursor:pointer;transition:.15s;background:var(--g50)}
+.drop:hover,.drop.drag{border-color:var(--azul);background:var(--azul-lt)}
+.drop .di{font-size:2rem;margin-bottom:.35rem}
+.drop p{color:var(--g600);font-size:.85rem}
+.drop small{color:var(--g400);font-size:.73rem}
 #file-in{display:none}
 .prog-wrap{background:var(--g200);border-radius:20px;height:7px;overflow:hidden;margin:.4rem 0}
 .prog-fill{height:100%;background:var(--azul);border-radius:20px;transition:width .3s}
-
-/* ── TOAST ── */
-#toasts{position:fixed;bottom:1.2rem;right:1.2rem;
-  display:flex;flex-direction:column;gap:.4rem;z-index:9999}
-.toast{background:var(--g800);color:#fff;padding:.65rem 1.1rem;
-  border-radius:var(--r);font-size:.82rem;box-shadow:var(--sh);
-  display:flex;align-items:center;gap:.5rem;
-  animation:ti .25s ease;max-width:300px}
-.toast.ok{background:var(--ok)}.toast.err{background:var(--danger)}.toast.warn{background:var(--warn);color:#000}
-@keyframes ti{from{opacity:0;transform:translateX(30px)}to{opacity:1;transform:translateX(0)}}
-
-/* ── MODAL ── */
-.overlay{position:fixed;inset:0;background:rgba(0,0,0,.45);
-  z-index:400;display:none;align-items:center;justify-content:center}
+#toasts{position:fixed;bottom:1.1rem;right:1.1rem;display:flex;flex-direction:column;gap:.35rem;z-index:9999}
+.toast{background:var(--g800);color:#fff;padding:.6rem 1rem;border-radius:8px;font-size:.8rem;box-shadow:0 4px 16px rgba(0,0,0,.18);display:flex;align-items:center;gap:.45rem;animation:ti .22s ease;max-width:290px}
+.toast.ok{background:var(--ok)}.toast.err{background:var(--err)}.toast.warn{background:var(--warn);color:#000}
+@keyframes ti{from{opacity:0;transform:translateX(28px)}to{opacity:1;transform:translateX(0)}}
+.overlay{position:fixed;inset:0;background:rgba(0,0,0,.42);z-index:400;display:none;align-items:center;justify-content:center}
 .overlay.open{display:flex}
-.modal{background:#fff;border-radius:var(--r);padding:1.75rem;
-  max-width:440px;width:90%;box-shadow:0 20px 60px rgba(0,0,0,.2)}
-.modal h3{font-size:1rem;margin-bottom:.75rem;color:var(--azul)}
-.modal-act{display:flex;gap:.6rem;margin-top:1.25rem;justify-content:flex-end}
-
-/* ── CONFIG LOGO ── */
-.logo-prev{max-height:50px;max-width:110px;object-fit:contain;
-  border:1.5px solid var(--g200);border-radius:6px;padding:.3rem;
-  background:var(--g50);margin-top:.4rem;display:none}
-
-/* ── PRINT ── */
+.modal{background:#fff;border-radius:8px;padding:1.6rem;max-width:420px;width:90%;box-shadow:0 20px 60px rgba(0,0,0,.2)}
+.modal h3{font-size:.95rem;margin-bottom:.65rem;color:var(--azul)}
+.modal-act{display:flex;gap:.55rem;margin-top:1.1rem;justify-content:flex-end}
+.logo-prev{max-height:50px;max-width:110px;object-fit:contain;border:1.5px solid var(--g200);border-radius:6px;padding:.3rem;background:var(--g50);margin-top:.4rem;display:none}
 @media print{
-  body>*:not(#print-root){display:none!important}
-  #print-root{display:block!important;position:fixed;inset:0;
-    background:#fff;display:flex;flex-wrap:wrap;
-    align-items:flex-start;gap:0;padding:6mm}
-  #etiqueta{box-shadow:none!important;border:1.5px solid #000}
+  body>*{visibility:hidden}
+  #etiqueta,#etiqueta *{visibility:visible}
+  #etiqueta{position:fixed;top:10mm;left:10mm;box-shadow:none!important;border:2px solid #000}
 }
-
-/* ── RESPONSIVE ── */
-@media(max-width:860px){
+@media(max-width:900px){
   #nova-cols{flex-direction:column}
-  #preview-col{position:static!important}
-  #etiqueta{width:100%;max-width:400px}
-  .fg{grid-template-columns:1fr 1fr}
+  #prev-col{position:static!important;width:100%}
+  #etiqueta{width:100%!important;max-width:400px}
 }
-@media(max-width:560px){
+@media(max-width:540px){
   .nav-links{display:none}
   .fg{grid-template-columns:1fr}
-  .fg .span2{grid-column:span 1}
+  .fg .s2{grid-column:span 1}
 }
 </style>
 </head>
 <body>
 
-<!-- NAVBAR -->
 <nav class="nav">
-  <div class="nav-brand">✈ AZUL CARGO <span style="font-size:.65rem;font-weight:400;opacity:.8;margin-left:.3rem">Etiquetas Pro</span></div>
+  <div class="nav-brand">✈ AZUL CARGO<small>Etiquetas Pro</small></div>
   <div class="nav-links">
-    <button onclick="go('dash')"      id="nb-dash"      class="active">Dashboard</button>
-    <button onclick="go('nova')"      id="nb-nova"             >Nova Etiqueta</button>
-    <button onclick="go('lote')"      id="nb-lote"             >Lote / CSV</button>
-    <button onclick="go('hist')"      id="nb-hist"             >Histórico</button>
-    <button onclick="go('cfg')"       id="nb-cfg"              >Configurações</button>
+    <button id="nb-dash" onclick="go('dash')">Dashboard</button>
+    <button id="nb-nova" onclick="go('nova')">Nova Etiqueta</button>
+    <button id="nb-lote" onclick="go('lote')">Lote / CSV</button>
+    <button id="nb-hist" onclick="go('hist')">Histórico</button>
+    <button id="nb-cfg"  onclick="go('cfg')">Configurações</button>
   </div>
 </nav>
 
-<!-- TOAST -->
 <div id="toasts"></div>
 
-<!-- MODAL EXCLUIR -->
 <div class="overlay" id="mod-del">
   <div class="modal">
     <h3>🗑️ Excluir etiqueta?</h3>
-    <p style="color:var(--g600);font-size:.87rem">Essa ação não pode ser desfeita.</p>
+    <p style="color:var(--g600);font-size:.85rem">Esta ação não pode ser desfeita.</p>
     <div class="modal-act">
-      <button class="btn btn-o btn-sm" onclick="closeModal()">Cancelar</button>
-      <button class="btn btn-d btn-sm" onclick="confirmDel()">Excluir</button>
+      <button class="btn bo bsm" onclick="closeModal()">Cancelar</button>
+      <button class="btn bd bsm" onclick="confirmDel()">Excluir</button>
     </div>
   </div>
 </div>
 
-<!-- PRINT ROOT (invisível, só para @media print) -->
-<div id="print-root" style="display:none"></div>
-
 <div class="wrap">
 
-<!-- ══ DASHBOARD ══ -->
+<!-- DASHBOARD -->
 <div class="view active" id="view-dash">
   <div class="stats">
-    <div class="stat"><div class="stat-ico ic-b">📦</div><div class="stat-info"><p>Hoje</p><h3 id="s-hoje">0</h3></div></div>
-    <div class="stat"><div class="stat-ico ic-o">📅</div><div class="stat-info"><p>Este Mês</p><h3 id="s-mes">0</h3></div></div>
-    <div class="stat"><div class="stat-ico ic-g">✅</div><div class="stat-info"><p>Total</p><h3 id="s-total">0</h3></div></div>
-    <div class="stat"><div class="stat-ico ic-p">⏱️</div><div class="stat-info"><p>Min. economizados</p><h3 id="s-tempo">0</h3></div></div>
+    <div class="stat"><div class="stat-ic ib">📦</div><div><p>Hoje</p><h3 id="s-hoje">0</h3></div></div>
+    <div class="stat"><div class="stat-ic io">📅</div><div><p>Este Mês</p><h3 id="s-mes">0</h3></div></div>
+    <div class="stat"><div class="stat-ic ig">✅</div><div><p>Total</p><h3 id="s-total">0</h3></div></div>
+    <div class="stat"><div class="stat-ic ip">⏱️</div><div><p>Min. economizados</p><h3 id="s-tempo">0</h3></div></div>
   </div>
   <div class="card">
     <div class="card-title">🚀 Ações Rápidas</div>
-    <div style="display:flex;flex-wrap:wrap;gap:.75rem">
-      <button class="btn btn-p" onclick="go('nova')">➕ Nova Etiqueta</button>
-      <button class="btn btn-a" onclick="go('lote')">📋 Importar Lote</button>
-      <button class="btn btn-o" onclick="go('hist')">🕐 Histórico</button>
+    <div style="display:flex;flex-wrap:wrap;gap:.65rem">
+      <button class="btn bp" onclick="go('nova')">➕ Nova Etiqueta</button>
+      <button class="btn ba" onclick="go('lote')">📋 Importar Lote</button>
+      <button class="btn bo" onclick="go('hist')">🕐 Histórico</button>
     </div>
   </div>
   <div class="card">
@@ -756,26 +195,23 @@ tbody td{padding:.65rem .85rem;color:var(--g700)}
     <div class="tbl-wrap">
       <table>
         <thead><tr><th>Código</th><th>Destinatário</th><th>Cidade/UF</th><th>Peso</th><th>Data</th><th></th></tr></thead>
-        <tbody id="dash-tb"></tbody>
+        <tbody id="dash-tb"><tr><td colspan="6"><div class="empty"><div class="ei">📭</div><p>Nenhuma etiqueta ainda</p></div></td></tr></tbody>
       </table>
     </div>
   </div>
 </div>
 
-<!-- ══ NOVA ETIQUETA ══ -->
+<!-- NOVA ETIQUETA -->
 <div class="view" id="view-nova">
-  <div style="display:flex;gap:1.5rem;align-items:flex-start" id="nova-cols">
-
-    <!-- Formulário -->
+  <div style="display:flex;gap:1.4rem;align-items:flex-start" id="nova-cols">
     <div style="flex:1;min-width:0">
 
-      <!-- Remetente -->
       <div class="card">
         <div class="card-title">📤 Remetente</div>
         <div class="fg">
           <div class="field full">
             <label>Nome / Razão Social <span class="req">*</span></label>
-            <input id="r-nome" type="text" oninput="upd()">
+            <input id="r-nome" type="text" placeholder="João Silva" oninput="upd()">
             <span class="fmsg" id="r-nome-m"></span>
           </div>
           <div class="field full">
@@ -786,18 +222,18 @@ tbody td{padding:.65rem .85rem;color:var(--g700)}
           <div class="field">
             <label>CEP <span class="req">*</span></label>
             <div class="cep-row">
-              <input id="r-cep" type="text" placeholder="00000-000" maxlength="9" oninput="mCep(this)" onkeyup="if(rawCep(this)==8)cep('r')">
-              <button class="cep-btn" onclick="cep('r')">Buscar</button>
+              <input id="r-cep" type="text" placeholder="00000-000" maxlength="9" oninput="mCep(this)" onkeyup="if(rawN(this)==8)buscaCep('r')">
+              <button class="cep-btn" onclick="buscaCep('r')">Buscar</button>
             </div>
             <span class="fmsg" id="r-cep-m"></span>
           </div>
           <div class="field">
             <label>Número <span class="req">*</span></label>
-            <input id="r-num" type="text" oninput="upd()">
+            <input id="r-num" type="text" placeholder="123" oninput="upd()">
           </div>
-          <div class="field span2">
+          <div class="field s2">
             <label>Logradouro</label>
-            <input id="r-end" type="text" oninput="upd()">
+            <input id="r-end" type="text" placeholder="Rua, Av..." oninput="upd()">
           </div>
           <div class="field">
             <label>Complemento</label>
@@ -815,25 +251,18 @@ tbody td{padding:.65rem .85rem;color:var(--g700)}
             <label>UF</label>
             <select id="r-uf" onchange="upd()">
               <option value="">--</option>
-              <option>AC</option><option>AL</option><option>AP</option><option>AM</option>
-              <option>BA</option><option>CE</option><option>DF</option><option>ES</option>
-              <option>GO</option><option>MA</option><option>MT</option><option>MS</option>
-              <option>MG</option><option>PA</option><option>PB</option><option>PR</option>
-              <option>PE</option><option>PI</option><option>RJ</option><option>RN</option>
-              <option>RS</option><option>RO</option><option>RR</option><option>SC</option>
-              <option selected>SP</option><option>SE</option><option>TO</option>
+              <option>AC</option><option>AL</option><option>AP</option><option>AM</option><option>BA</option><option>CE</option><option>DF</option><option>ES</option><option>GO</option><option>MA</option><option>MT</option><option>MS</option><option>MG</option><option>PA</option><option>PB</option><option>PR</option><option>PE</option><option>PI</option><option>RJ</option><option>RN</option><option>RS</option><option>RO</option><option>RR</option><option>SC</option><option selected>SP</option><option>SE</option><option>TO</option>
             </select>
           </div>
         </div>
       </div>
 
-      <!-- Destinatário -->
       <div class="card">
         <div class="card-title">📥 Destinatário</div>
         <div class="fg">
           <div class="field full">
             <label>Nome / Razão Social <span class="req">*</span></label>
-            <input id="d-nome" type="text" oninput="upd()">
+            <input id="d-nome" type="text" placeholder="Maria Oliveira" oninput="upd()">
             <span class="fmsg" id="d-nome-m"></span>
           </div>
           <div class="field full">
@@ -847,18 +276,18 @@ tbody td{padding:.65rem .85rem;color:var(--g700)}
           <div class="field">
             <label>CEP <span class="req">*</span></label>
             <div class="cep-row">
-              <input id="d-cep" type="text" placeholder="00000-000" maxlength="9" oninput="mCep(this)" onkeyup="if(rawCep(this)==8)cep('d')">
-              <button class="cep-btn" onclick="cep('d')">Buscar</button>
+              <input id="d-cep" type="text" placeholder="00000-000" maxlength="9" oninput="mCep(this)" onkeyup="if(rawN(this)==8)buscaCep('d')">
+              <button class="cep-btn" onclick="buscaCep('d')">Buscar</button>
             </div>
             <span class="fmsg" id="d-cep-m"></span>
           </div>
           <div class="field">
             <label>Número <span class="req">*</span></label>
-            <input id="d-num" type="text" oninput="upd()">
+            <input id="d-num" type="text" placeholder="456" oninput="upd()">
           </div>
-          <div class="field span2">
+          <div class="field s2">
             <label>Logradouro</label>
-            <input id="d-end" type="text" oninput="upd()">
+            <input id="d-end" type="text" placeholder="Rua, Av..." oninput="upd()">
           </div>
           <div class="field">
             <label>Complemento</label>
@@ -876,19 +305,12 @@ tbody td{padding:.65rem .85rem;color:var(--g700)}
             <label>UF</label>
             <select id="d-uf" onchange="upd()">
               <option value="">--</option>
-              <option>AC</option><option>AL</option><option>AP</option><option>AM</option>
-              <option>BA</option><option>CE</option><option>DF</option><option>ES</option>
-              <option>GO</option><option>MA</option><option>MT</option><option>MS</option>
-              <option>MG</option><option>PA</option><option>PB</option><option>PR</option>
-              <option>PE</option><option>PI</option><option>RJ</option><option>RN</option>
-              <option>RS</option><option>RO</option><option>RR</option><option>SC</option>
-              <option>SP</option><option>SE</option><option>TO</option>
+              <option>AC</option><option>AL</option><option>AP</option><option>AM</option><option>BA</option><option>CE</option><option>DF</option><option>ES</option><option>GO</option><option>MA</option><option>MT</option><option>MS</option><option>MG</option><option>PA</option><option>PB</option><option>PR</option><option>PE</option><option>PI</option><option>RJ</option><option>RN</option><option>RS</option><option>RO</option><option>RR</option><option>SC</option><option>SP</option><option>SE</option><option>TO</option>
             </select>
           </div>
         </div>
       </div>
 
-      <!-- Pacote -->
       <div class="card">
         <div class="card-title">📦 Dados do Pacote</div>
         <div class="fg">
@@ -899,7 +321,7 @@ tbody td{padding:.65rem .85rem;color:var(--g700)}
           </div>
           <div class="field">
             <label>Altura (cm)</label>
-            <input id="p-alt"  type="number" placeholder="10" min="1" oninput="calcCub();upd()">
+            <input id="p-alt" type="number" placeholder="10" min="1" oninput="calcCub();upd()">
           </div>
           <div class="field">
             <label>Largura (cm)</label>
@@ -915,181 +337,535 @@ tbody td{padding:.65rem .85rem;color:var(--g700)}
           </div>
           <div class="field">
             <label>Conteúdo</label>
-            <input id="p-conteudo" type="text" placeholder="Ex: Eletrônico" oninput="upd()">
-          </div>
-          <div class="field full">
-            <label>Observações (FRÁGIL, URGENTE…)</label>
-            <textarea id="p-obs" rows="2" oninput="upd()"></textarea>
+            <input id="p-conteudo" type="text" placeholder="Eletrônico" oninput="upd()">
           </div>
           <div class="field">
             <label>Serviço</label>
             <select id="p-servico" onchange="upd()">
               <option value="EXPRESS">EXPRESS</option>
               <option value="ECONOMICO">ECONÔMICO</option>
-              <option value="CARGO">CARGO +</option>
+              <option value="CARGO+">CARGO+</option>
             </select>
           </div>
           <div class="field">
             <label>Prazo estimado</label>
             <input id="p-prazo" type="text" placeholder="3 dias úteis" oninput="upd()">
           </div>
+          <div class="field full">
+            <label>Observações (FRÁGIL, URGENTE…)</label>
+            <textarea id="p-obs" rows="2" oninput="upd()"></textarea>
+          </div>
         </div>
         <div class="cubico" id="cubico">
-          <strong>📐 Peso Cubado (L×A×C ÷ 6.000)</strong>
+          <strong>📐 Peso Cubado — L × A × C ÷ 6.000</strong>
           <span id="cubico-txt"></span>
         </div>
       </div>
 
       <div class="actions">
-        <button class="btn btn-p" onclick="gerar()">✅ Gerar Etiqueta</button>
-        <button class="btn btn-o" onclick="limpar()">🔄 Limpar</button>
-        <button class="btn btn-a" onclick="salvarRasc()">💾 Salvar Rascunho</button>
+        <button class="btn bp" onclick="gerar()">✅ Gerar Etiqueta</button>
+        <button class="btn bo" onclick="limpar()">🔄 Limpar</button>
+        <button class="btn ba" onclick="salvarRasc()">💾 Salvar Rascunho</button>
       </div>
     </div>
 
-    <!-- Preview -->
-    <div id="preview-col" style="position:sticky;top:70px;flex-shrink:0">
+    <!-- PREVIEW -->
+    <div id="prev-col" style="position:sticky;top:66px;flex-shrink:0">
       <div class="card" style="padding:1rem">
-        <div class="card-title">👁️ Preview</div>
-
-        <div class="formato-sel">
+        <div class="card-title">👁️ Preview da Etiqueta</div>
+        <div class="fmt-sel">
           <button class="fmt-btn active" onclick="setFmt('normal',this)">A4 Padrão</button>
-          <button class="fmt-btn"        onclick="setFmt('termica',this)">Térmica</button>
-          <button class="fmt-btn"        onclick="setFmt('mini',this)">Mini</button>
+          <button class="fmt-btn" onclick="setFmt('termica',this)">Térmica</button>
+          <button class="fmt-btn" onclick="setFmt('mini',this)">Mini</button>
         </div>
 
-        <!-- ═══════════════════════════════
-             ETIQUETA DE TRANSPORTE PADRÃO
-             ═══════════════════════════════ -->
         <div id="etiqueta">
-
-          <!-- 1. Cabeçalho transportadora -->
-          <div class="etq-topo">
+          <div class="etq-head">
             <div>
-              <div class="etq-topo-marca" id="etq-marca">✈ AZUL CARGO</div>
-              <div class="etq-topo-sub"   id="etq-sub">Express Logística</div>
+              <div class="etq-marca" id="etq-marca">✈ AZUL CARGO</div>
+              <div class="etq-sub" id="etq-sub">Express Logística</div>
             </div>
-            <img id="etq-logo-img" class="etq-topo-logo" src="" alt="">
-            <div class="etq-topo-servico" id="etq-servico-badge">EXPRESS</div>
+            <img id="etq-logo" class="etq-logo-img" src="" alt="">
+            <div class="etq-srv-badge" id="etq-srv-badge">EXPRESS</div>
           </div>
-
-          <!-- 2. Barra serviço / prazo -->
-          <div class="etq-servico-bar">
-            <span>CÓDIGO DE SERVIÇO: <strong id="etq-cod-serv">AZE</strong></span>
-            <span class="prazo">⏱ <span id="etq-prazo">—</span></span>
+          <div class="etq-srv-bar">
+            <span>CÓD. SERVIÇO: <strong id="etq-cod-srv">AZE</strong></span>
+            <span class="prazo">⏱ <span id="etq-prazo-txt">—</span></span>
           </div>
-
-          <!-- 3. DESTINATÁRIO (grande, destaque) -->
-          <div class="etq-destinatario">
-            <div class="etq-bloco-label">▼ DESTINATÁRIO</div>
-            <div class="etq-dest-nome" id="etq-d-nome">—</div>
-            <div class="etq-dest-end"  id="etq-d-end">—</div>
-            <div class="etq-dest-cep"  id="etq-d-cep">CEP: —</div>
-            <div class="etq-dest-cidade" id="etq-d-cidade">—</div>
+          <div class="etq-dest">
+            <div class="blk-label">▼ DESTINATÁRIO</div>
+            <div class="etq-d-nome" id="etq-d-nome">—</div>
+            <div class="etq-d-end"  id="etq-d-end">—</div>
+            <div class="etq-d-cep"  id="etq-d-cep">CEP: —</div>
+            <div class="etq-d-cidade" id="etq-d-cidade">—</div>
           </div>
-
-          <!-- 4. Barra UF destino (destaque lateral) -->
           <div class="etq-uf-bar">
             <div class="etq-uf-box" id="etq-uf-box">—</div>
             <div class="etq-uf-info">
               <span>Município destino</span>
               <strong id="etq-uf-cidade">—</strong>
-              <span style="margin-top:.15rem">Bairro: <strong id="etq-uf-bairro">—</strong></span>
+              <span style="margin-top:.1rem">Bairro: <strong id="etq-uf-bairro">—</strong></span>
             </div>
           </div>
-
-          <!-- 5. Dados do pacote (células) -->
-          <div class="etq-pacote">
-            <div class="etq-pcel">
-              <div class="label">Peso (kg)</div>
-              <div class="valor" id="etq-peso">—</div>
-            </div>
-            <div class="etq-pcel">
-              <div class="label">Dimensões (cm)</div>
-              <div class="valor" id="etq-dim">—</div>
-            </div>
-            <div class="etq-pcel">
-              <div class="label">Vlr. Declarado</div>
-              <div class="valor" id="etq-valor">—</div>
-            </div>
+          <div class="etq-pkg">
+            <div class="etq-pc"><div class="lbl">Peso</div><div class="val" id="etq-peso">—</div></div>
+            <div class="etq-pc"><div class="lbl">Dimensões (cm)</div><div class="val" id="etq-dim">—</div></div>
+            <div class="etq-pc"><div class="lbl">Vlr. Declarado</div><div class="val" id="etq-valor">—</div></div>
           </div>
-
-          <!-- Conteúdo / obs (linha extra) -->
-          <div style="border-bottom:1.5px solid #000;padding:.3rem .75rem;display:flex;gap:1.5rem">
-            <div class="etq-pcel" style="border:none;padding:0">
-              <div class="label">Conteúdo</div>
-              <div class="valor" id="etq-conteudo" style="font-size:.75rem">—</div>
-            </div>
-            <div class="etq-pcel" style="border:none;padding:0">
-              <div class="label">Nota Fiscal / Obs</div>
-              <div class="valor" id="etq-obs-val" style="font-size:.75rem">—</div>
-            </div>
+          <div class="etq-extra">
+            <div style="flex:1"><div class="lbl">Conteúdo</div><div class="val" id="etq-conteudo" style="font-size:.75rem">—</div></div>
+            <div style="flex:1"><div class="lbl">Observações</div><div class="val" id="etq-obs-val" style="font-size:.75rem">—</div></div>
           </div>
-
-          <!-- 6. Remetente (menor, fundo cinza) -->
-          <div class="etq-remetente">
-            <div class="etq-bloco-label">▲ REMETENTE</div>
-            <div class="etq-rem-nome" id="etq-r-nome">—</div>
-            <div class="etq-rem-end"  id="etq-r-end">—</div>
+          <div class="etq-rem">
+            <div class="blk-label">▲ REMETENTE</div>
+            <div class="etq-r-nome" id="etq-r-nome">—</div>
+            <div class="etq-r-end"  id="etq-r-end">—</div>
           </div>
-
-          <!-- 7. Código de barras Code128 -->
           <div class="etq-barcode">
             <svg id="etq-barcode"></svg>
-            <div class="etq-codigo-texto" id="etq-codigo">—</div>
+            <div class="etq-cod-txt" id="etq-cod-txt">—</div>
           </div>
-
-          <!-- 8. Rodapé -->
-          <div class="etq-rodape">
-            <span id="etq-footer-l">Azul Cargo Express | azulcargo.com.br</span>
-            <span id="etq-obs-tag"></span>
+          <div class="etq-footer">
+            <span id="etq-footer-l">Azul Cargo Express</span>
+            <span id="etq-obs-tag" class="etq-obs-tag" style="display:none"></span>
             <span id="etq-dt">—</span>
           </div>
+        </div>
 
-        </div><!-- /etiqueta -->
-
-        <div style="display:flex;flex-wrap:wrap;gap:.5rem;margin-top:.85rem">
-          <button class="btn btn-p btn-sm" id="btn-imp" onclick="imprimir()" disabled>🖨️ Imprimir</button>
-          <button class="btn btn-g btn-sm" id="btn-pdf" onclick="baixarPDF()" disabled>⬇️ PDF</button>
+        <div style="display:flex;flex-wrap:wrap;gap:.5rem;margin-top:.75rem">
+          <button class="btn bp bsm" id="btn-imp" onclick="imprimir()" disabled>🖨️ Imprimir</button>
+          <button class="btn bg bsm" id="btn-pdf" onclick="baixarPDF()" disabled>⬇️ PDF</button>
+          <button class="btn bo bsm" id="btn-nova2" onclick="limpar()" style="display:none">➕ Nova</button>
         </div>
       </div>
     </div>
-
   </div>
 </div>
 
-<!-- ══ LOTE / CSV ══ -->
+<!-- LOTE -->
 <div class="view" id="view-lote">
   <div class="card">
     <div class="card-title">📋 Importação em Lote</div>
-    <p style="font-size:.85rem;color:var(--g600);margin-bottom:.85rem">
-      Importe CSV ou Excel com múltiplos destinatários.
-      <a href="#" onclick="dlTemplate();return false" style="color:var(--azul);font-weight:700">⬇️ Baixar template</a>
+    <p style="font-size:.83rem;color:var(--g600);margin-bottom:.8rem">
+      Importe CSV com múltiplos destinatários.
+      <a href="#" onclick="dlTemplate();return false" style="color:var(--azul);font-weight:700">⬇️ Baixar template CSV</a>
     </p>
-    <div class="drop-area" id="drop"
+    <div class="drop" id="drop-area"
          onclick="document.getElementById('file-in').click()"
          ondragover="event.preventDefault();this.classList.add('drag')"
          ondragleave="this.classList.remove('drag')"
          ondrop="handleDrop(event)">
       <div class="di">📂</div>
       <p>Clique ou arraste o arquivo aqui</p>
-      <small>Aceito: .csv, .xlsx, .xls</small>
+      <small>Aceito: .csv</small>
     </div>
-    <input type="file" id="file-in" accept=".csv,.xlsx,.xls" onchange="handleFile(event)">
-
-    <div id="lote-res" style="display:none;margin-top:1.25rem">
-      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:.75rem">
+    <input type="file" id="file-in" accept=".csv" onchange="handleFile(event)">
+    <div id="lote-res" style="display:none;margin-top:1.1rem">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:.7rem">
         <span id="lote-count" style="font-weight:700;color:var(--g700)"></span>
-        <div style="display:flex;gap:.5rem">
-          <button class="btn btn-p btn-sm" onclick="processarLote()">🚀 Gerar Todas</button>
-          <button class="btn btn-o btn-sm" onclick="limparLote()">✖ Limpar</button>
+        <div style="display:flex;gap:.45rem">
+          <button class="btn bp bsm" onclick="processarLote()">🚀 Gerar Todas</button>
+          <button class="btn bo bsm" onclick="limparLote()">✖ Limpar</button>
         </div>
       </div>
       <div id="lote-prog" style="display:none">
         <div class="prog-wrap"><div class="prog-fill" id="lote-bar" style="width:0%"></div></div>
-        <p id="lote-prog-txt" style="font-size:.77rem;color:var(--g600);margin-top:.25rem"></p>
+        <p id="lote-prog-txt" style="font-size:.75rem;color:var(--g600);margin-top:.2rem"></p>
       </div>
       <div class="tbl-wrap">
         <table>
-          <thead><tr><th>#</th><th>Destin
+          <thead><tr><th>#</th><th>Destinatário</th><th>CEP</th><th>Cidade/UF</th><th>Peso</th><th>Status</th></tr></thead>
+          <tbody id="lote-tb"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- HISTÓRICO -->
+<div class="view" id="view-hist">
+  <div class="card">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:.9rem">
+      <div class="card-title" style="margin:0;border:none;padding:0">🕐 Histórico</div>
+      <div style="display:flex;gap:.45rem">
+        <button class="btn bo bsm" onclick="exportCSV()">⬇️ Exportar CSV</button>
+        <button class="btn bd bsm" onclick="limparHist()">🗑️ Limpar Tudo</button>
+      </div>
+    </div>
+    <div class="filters">
+      <input type="text" id="f-busca" placeholder="🔍 Nome, código..." oninput="renderHist()">
+      <input type="date" id="f-ini" onchange="renderHist()">
+      <input type="date" id="f-fim" onchange="renderHist()">
+      <select id="f-uf" onchange="renderHist()">
+        <option value="">Todos os estados</option>
+        <option>AC</option><option>AL</option><option>AP</option><option>AM</option><option>BA</option><option>CE</option><option>DF</option><option>ES</option><option>GO</option><option>MA</option><option>MT</option><option>MS</option><option>MG</option><option>PA</option><option>PB</option><option>PR</option><option>PE</option><option>PI</option><option>RJ</option><option>RN</option><option>RS</option><option>RO</option><option>RR</option><option>SC</option><option>SP</option><option>SE</option><option>TO</option>
+      </select>
+    </div>
+    <div class="tbl-wrap">
+      <table>
+        <thead>
+          <tr><th>Código</th><th>Remetente</th><th>Destinatário</th><th>Cidade/UF</th><th>Peso</th><th>Cubado</th><th>Valor Dec.</th><th>Data/Hora</th><th>Ações</th></tr>
+        </thead>
+        <tbody id="hist-tb"></tbody>
+      </table>
+    </div>
+    <div id="hist-empty" class="empty" style="display:none"><div class="ei">📭</div><p>Nenhuma etiqueta encontrada</p></div>
+  </div>
+</div>
+
+<!-- CONFIGURAÇÕES -->
+<div class="view" id="view-cfg">
+  <div class="card" style="max-width:580px">
+    <div class="card-title">⚙️ Configurações</div>
+    <div class="fg">
+      <div class="field full">
+        <label>Nome da Empresa</label>
+        <input id="c-empresa" type="text" placeholder="Minha Empresa Ltda">
+      </div>
+      <div class="field">
+        <label>CNPJ</label>
+        <input id="c-cnpj" type="text" placeholder="00.000.000/0000-00" oninput="mDoc(this)">
+        <span class="fmsg" id="c-cnpj-m"></span>
+      </div>
+      <div class="field">
+        <label>Telefone</label>
+        <input id="c-tel" type="text" placeholder="(11) 99999-9999" oninput="mTel(this)">
+      </div>
+      <div class="field">
+        <label>Email</label>
+        <input id="c-email" type="email" placeholder="contato@empresa.com.br">
+      </div>
+      <div class="field">
+        <label>Site</label>
+        <input id="c-site" type="text" placeholder="www.empresa.com.br">
+      </div>
+      <div class="field">
+        <label>Prefixo do Código (2 letras)</label>
+        <input id="c-prefixo" type="text" placeholder="AZ" maxlength="2" style="text-transform:uppercase">
+      </div>
+      <div class="field full">
+        <label>Logo da Empresa</label>
+        <input type="file" id="c-logo" accept="image/*" onchange="prevLogo(event)">
+        <img id="c-logo-prev" class="logo-prev" src="" alt="Logo">
+      </div>
+    </div>
+    <div class="actions">
+      <button class="btn bp" onclick="salvarCfg()">💾 Salvar</button>
+      <button class="btn bo" onclick="carregarCfg()">↩️ Restaurar</button>
+    </div>
+  </div>
+</div>
+
+</div><!-- /wrap -->
+
+<script>
+// ─── ESTADO ───────────────────────────────────────────
+var hist    = JSON.parse(localStorage.getItem('etq_hist') || '[]');
+var cfg     = JSON.parse(localStorage.getItem('etq_cfg')  || '{}');
+var rasc    = JSON.parse(localStorage.getItem('etq_rasc') || '{}');
+var loteData = [];
+var delTarget = null;
+var codigoAtual = null;
+
+// ─── NAVEGAÇÃO ────────────────────────────────────────
+function go(id) {
+  document.querySelectorAll('.view').forEach(function(v){ v.classList.remove('active'); });
+  document.querySelectorAll('.nav-links button').forEach(function(b){ b.classList.remove('active'); });
+  document.getElementById('view-' + id).classList.add('active');
+  document.getElementById('nb-' + id).classList.add('active');
+  if (id === 'dash') renderDash();
+  if (id === 'hist') renderHist();
+  if (id === 'cfg')  carregarCfg();
+  if (id === 'nova' && Object.keys(rasc).length) restRasc();
+}
+
+// ─── TOAST ────────────────────────────────────────────
+function toast(msg, tipo) {
+  var el = document.createElement('div');
+  el.className = 'toast ' + (tipo || '');
+  el.textContent = msg;
+  document.getElementById('toasts').appendChild(el);
+  setTimeout(function(){ el.remove(); }, 3500);
+}
+
+// ─── MÁSCARAS ─────────────────────────────────────────
+function rawN(el) { return el.value.replace(/\D/g,'').length; }
+
+function mCep(el) {
+  var v = el.value.replace(/\D/g,'').slice(0,8);
+  el.value = v.length > 5 ? v.slice(0,5) + '-' + v.slice(5) : v;
+}
+
+function mDoc(el) {
+  var v = el.value.replace(/\D/g,'');
+  if (v.length <= 11) {
+    v = v.replace(/(\d{3})(\d)/,'$1.$2')
+         .replace(/(\d{3})(\d)/,'$1.$2')
+         .replace(/(\d{3})(\d{1,2})$/,'$1-$2');
+  } else {
+    v = v.slice(0,14)
+         .replace(/(\d{2})(\d)/,'$1.$2')
+         .replace(/(\d{3})(\d)/,'$1.$2')
+         .replace(/(\d{3})(\d)/,'$1/$2')
+         .replace(/(\d{4})(\d{1,2})$/,'$1-$2');
+  }
+  el.value = v;
+}
+
+function mTel(el) {
+  var v = el.value.replace(/\D/g,'').slice(0,11);
+  if (v.length > 10) el.value = v.replace(/(\d{2})(\d{5})(\d{4})/,'($1) $2-$3');
+  else if (v.length > 6) el.value = v.replace(/(\d{2})(\d{4})(\d*)/,'($1) $2-$3');
+  else if (v.length > 2) el.value = v.replace(/(\d{2})(\d*)/,'($1) $2');
+  else el.value = v;
+}
+
+// ─── BUSCA CEP ────────────────────────────────────────
+function buscaCep(p) {
+  var cepEl = document.getElementById(p + '-cep');
+  var msgEl = document.getElementById(p + '-cep-m');
+  var cep   = cepEl.value.replace(/\D/g,'');
+  if (cep.length !== 8) { toast('CEP deve ter 8 dígitos','warn'); return; }
+  msgEl.textContent = '⏳ Buscando...';
+  msgEl.className = 'fmsg';
+  fetch('https://viacep.com.br/ws/' + cep + '/json/')
+    .then(function(r){ return r.json(); })
+    .then(function(d){
+      if (d.erro) {
+        msgEl.textContent = '✗ CEP não encontrado';
+        msgEl.className = 'fmsg err';
+        return;
+      }
+      document.getElementById(p + '-end').value    = d.logradouro || '';
+      document.getElementById(p + '-bairro').value = d.bairro     || '';
+      document.getElementById(p + '-cidade').value = d.localidade || '';
+      var ufEl = document.getElementById(p + '-uf');
+      for (var i = 0; i < ufEl.options.length; i++) {
+        if (ufEl.options[i].value === d.uf) { ufEl.value = d.uf; break; }
+      }
+      msgEl.textContent = '✓ ' + d.localidade + '/' + d.uf;
+      msgEl.className = 'fmsg ok';
+      upd();
+      toast('CEP encontrado: ' + d.localidade + '/' + d.uf, 'ok');
+    })
+    .catch(function(){
+      msgEl.textContent = '✗ Erro ao buscar';
+      msgEl.className = 'fmsg err';
+    });
+}
+
+// ─── PESO CÚBICO ──────────────────────────────────────
+function calcCub() {
+  var h = parseFloat(document.getElementById('p-alt').value)  || 0;
+  var l = parseFloat(document.getElementById('p-larg').value) || 0;
+  var c = parseFloat(document.getElementById('p-comp').value) || 0;
+  var p = parseFloat(document.getElementById('p-peso').value) || 0;
+  var el = document.getElementById('cubico');
+  if (h && l && c) {
+    var cub = (h * l * c) / 6000;
+    var cobrado = Math.max(p, cub);
+    document.getElementById('cubico-txt').textContent =
+      h+'×'+l+'×'+c+' ÷ 6.000 = '+cub.toFixed(3)+' kg cubado. ' +
+      'Peso cobrado: '+cobrado.toFixed(3)+' kg ('+(cobrado===cub?'cúbico':'real')+')';
+    el.style.display = 'block';
+  } else {
+    el.style.display = 'none';
+  }
+}
+
+// ─── GERAR CÓDIGO DE RASTREIO ─────────────────────────
+function gerarCod() {
+  var pref = ((cfg.prefixo || 'AZ') + 'AZ').toUpperCase().slice(0,2);
+  var ts   = Date.now().toString(36).toUpperCase();
+  var rnd  = Math.random().toString(36).slice(2,6).toUpperCase();
+  return pref + ts + rnd;
+}
+
+// ─── MAPA SERVIÇO → CÓDIGO ────────────────────────────
+var srvMap = { 'EXPRESS':'AZE', 'ECONOMICO':'AZC', 'CARGO+':'AZP' };
+
+// ─── UPDATE PREVIEW ───────────────────────────────────
+function g(id){ return document.getElementById(id); }
+function val(id){ return (g(id) && g(id).value) ? g(id).value.trim() : ''; }
+
+function upd() {
+  // Remetente
+  var rNome   = val('r-nome');
+  var rEnd    = [val('r-end'), val('r-num'), val('r-comp')].filter(Boolean).join(', ');
+  var rLocal  = [val('r-bairro'), val('r-cidade'), val('r-uf')].filter(Boolean).join(' – ');
+  var rCep    = val('r-cep');
+
+  // Destinatário
+  var dNome   = val('d-nome');
+  var dEnd    = [val('d-end'), val('d-num'), val('d-comp')].filter(Boolean).join(', ');
+  var dBairro = val('d-bairro');
+  var dCidade = val('d-cidade');
+  var dUf     = val('d-uf');
+  var dCep    = val('d-cep');
+
+  // Pacote
+  var peso    = val('p-peso');
+  var alt     = val('p-alt');
+  var larg    = val('p-larg');
+  var comp    = val('p-comp');
+  var valor   = val('p-valor');
+  var cont    = val('p-conteudo');
+  var obs     = val('p-obs');
+  var srv     = val('p-servico') || 'EXPRESS';
+  var prazo   = val('p-prazo');
+
+  // Peso cobrado
+  var pesoCob = peso;
+  if (alt && larg && comp) {
+    var cub = (parseFloat(alt) * parseFloat(larg) * parseFloat(comp)) / 6000;
+    pesoCob = Math.max(parseFloat(peso) || 0, cub).toFixed(3);
+  }
+
+  // Preenche etiqueta
+  g('etq-d-nome').textContent    = dNome   || '—';
+  g('etq-d-end').textContent     = dEnd    || '—';
+  g('etq-d-cep').textContent     = dCep ? 'CEP: ' + dCep : 'CEP: —';
+  g('etq-d-cidade').textContent  = [dCidade, dUf].filter(Boolean).join(' – ') || '—';
+
+  g('etq-uf-box').textContent    = dUf     || '—';
+  g('etq-uf-cidade').textContent = dCidade || '—';
+  g('etq-uf-bairro').textContent = dBairro || '—';
+
+  g('etq-r-nome').textContent    = rNome   || '—';
+  g('etq-r-end').textContent     = [rEnd, rLocal, rCep ? 'CEP: '+rCep : ''].filter(Boolean).join(' | ') || '—';
+
+  g('etq-peso').textContent      = peso    ? peso + ' kg'   : '—';
+  g('etq-dim').textContent       = (alt && larg && comp) ? alt+'×'+larg+'×'+comp : '—';
+  g('etq-valor').textContent     = valor   ? 'R$ ' + parseFloat(valor).toFixed(2) : '—';
+  g('etq-conteudo').textContent  = cont    || '—';
+  g('etq-obs-val').textContent   = obs     || '—';
+
+  g('etq-srv-badge').textContent = srv;
+  g('etq-cod-srv').textContent   = srvMap[srv] || 'AZE';
+  g('etq-prazo-txt').textContent = prazo   || '—';
+
+  // Obs tag
+  var obsTag = g('etq-obs-tag');
+  if (obs) { obsTag.textContent = obs.toUpperCase(); obsTag.style.display = 'inline'; }
+  else      { obsTag.style.display = 'none'; }
+
+  // Data/hora
+  g('etq-dt').textContent = new Date().toLocaleString('pt-BR');
+
+  // Logo / marca empresa
+  if (cfg.empresa) {
+    g('etq-marca').textContent = '✈ ' + cfg.empresa.toUpperCase();
+    g('etq-footer-l').textContent = cfg.empresa;
+  }
+  if (cfg.logoB64) {
+    g('etq-logo').src = cfg.logoB64;
+    g('etq-logo').style.display = 'block';
+  } else {
+    g('etq-logo').style.display = 'none';
+  }
+
+  // Código de barras (preview usa código temporário)
+  var tmpCod = codigoAtual || ('AZ' + Date.now().toString(36).toUpperCase().slice(-8));
+  g('etq-cod-txt').textContent = tmpCod;
+  try {
+    JsBarcode('#etq-barcode', tmpCod, {
+      format: 'CODE128',
+      width: 1.6,
+      height: 48,
+      displayValue: false,
+      margin: 2
+    });
+  } catch(e) {}
+}
+
+// ─── VALIDAÇÃO BÁSICA ─────────────────────────────────
+function validar() {
+  var ok = true;
+  var campos = [
+    { id:'r-nome',   msg:'r-nome-m',  txt:'Nome do remetente obrigatório' },
+    { id:'r-cep',    msg:'r-cep-m',   txt:'CEP do remetente obrigatório'  },
+    { id:'r-num',    msg:null,        txt:'Número do remetente obrigatório' },
+    { id:'d-nome',   msg:'d-nome-m',  txt:'Nome do destinatário obrigatório' },
+    { id:'d-cep',    msg:'d-cep-m',   txt:'CEP do destinatário obrigatório' },
+    { id:'d-num',    msg:null,        txt:'Número do destinatário obrigatório' },
+    { id:'p-peso',   msg:'p-peso-m',  txt:'Peso do pacote obrigatório' }
+  ];
+  campos.forEach(function(c){
+    var el = g(c.id);
+    if (!el || !el.value.trim()) {
+      ok = false;
+      if (c.msg && g(c.msg)) {
+        g(c.msg).textContent = '✗ ' + c.txt;
+        g(c.msg).className = 'fmsg err';
+      }
+    } else {
+      if (c.msg && g(c.msg)) {
+        g(c.msg).textContent = '';
+      }
+    }
+  });
+  return ok;
+}
+
+// ─── GERAR ETIQUETA ───────────────────────────────────
+function gerar() {
+  if (!validar()) { toast('Preencha os campos obrigatórios (*)', 'warn'); return; }
+
+  codigoAtual = gerarCod();
+
+  var h = parseFloat(val('p-alt'))  || 0;
+  var l = parseFloat(val('p-larg')) || 0;
+  var c = parseFloat(val('p-comp')) || 0;
+  var p = parseFloat(val('p-peso')) || 0;
+  var cub = (h && l && c) ? parseFloat(((h*l*c)/6000).toFixed(3)) : null;
+  var pesoCob = cub ? Math.max(p, cub) : p;
+
+  var registro = {
+    codigo:     codigoAtual,
+    rNome:      val('r-nome'),
+    rDoc:       val('r-doc'),
+    rCep:       val('r-cep'),
+    rEnd:       val('r-end'),
+    rNum:       val('r-num'),
+    rComp:      val('r-comp'),
+    rBairro:    val('r-bairro'),
+    rCidade:    val('r-cidade'),
+    rUf:        val('r-uf'),
+    dNome:      val('d-nome'),
+    dDoc:       val('d-doc'),
+    dTel:       val('d-tel'),
+    dCep:       val('d-cep'),
+    dEnd:       val('d-end'),
+    dNum:       val('d-num'),
+    dComp:      val('d-comp'),
+    dBairro:    val('d-bairro'),
+    dCidade:    val('d-cidade'),
+    dUf:        val('d-uf'),
+    peso:       p,
+    alt:        h || null,
+    larg:       l || null,
+    comp:       c || null,
+    cubado:     cub,
+    pesoCob:    pesoCob,
+    valor:      parseFloat(val('p-valor')) || null,
+    conteudo:   val('p-conteudo'),
+    obs:        val('p-obs'),
+    servico:    val('p-servico') || 'EXPRESS',
+    prazo:      val('p-prazo'),
+    dt:         new Date().toISOString()
+  };
+
+  hist.unshift(registro);
+  localStorage.setItem('etq_hist', JSON.stringify(hist));
+
+  // Atualiza preview com código definitivo
+  upd();
+  g('etq-cod-txt').textContent = codigoAtual;
+  try {
+    JsBarcode('#etq-barcode', codigoAtual, {
+      format:'CODE128', width:1.6, height:48, displayValue:false, margin:2
+    });
+  } catch(e){}
+
+  //
 
